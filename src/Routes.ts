@@ -12,8 +12,8 @@ router.use((req, res, next) => {
 });
 
 router.get('/', (req, res) => {
-	res.sendStatus(200);
 	res.json({ docs: 'https://processversion.herokuapp.com/endpoints' });
+	res.sendStatus(200);
 });
 
 router.get('/endpoints', (req, res) => {
