@@ -4,6 +4,7 @@ import Roblox from 'noblox.js';
 import * as dotenv from 'dotenv';
 import BaseObj from '../Structures/BaseObj';
 import Funcs from '../Interfaces/Funcs';
+import fetch from 'node-fetch';
 
 dotenv.config();
 const client = new Client();
@@ -23,46 +24,40 @@ namespace Functions {
 			const url = `https://www.instagram.com/${user}/?__a=1`;
 
 			try {
-				const res = await axios.get(url);
-				const body = <Funcs.IGProfile>res.data;
+				fetch(url)
+					.then((res) => res.json())
+					.then((body) => {
+						const count = Object.keys(body).length;
 
-				const count = Object.keys(body).length;
+						if (count == 0) {
+							return new BaseObj({
+								success: false,
+								status: 404,
+								statusMessage: "Couldn't find anyone with that username",
+								data: null,
+							});
+						}
 
-				if (count == 0) {
-					return new BaseObj({
-						success: false,
-						status: 404,
-						statusMessage: "Couldn't find anyone with that username",
-						data: null,
+						console.log(body);
+
+						const data = {
+							url: `https://www.instagram.com/${body.graphql.user.username}/`,
+							user: {
+								thumbnail: body.graphql.user.profile_pic_url_hd,
+								full_name: body.graphql.user.full_name,
+								bio: body.graphql.user.biography,
+								username: body.graphql.user.username,
+								id: body.graphql.user.id,
+							},
+							account: {
+								followers: body.graphql.user.edge_followed_by.count,
+								following: body.graphql.user.edge_follow.count,
+								posts: body.graphql.user.edge_owner_to_timeline_media.count,
+								private: body.graphql.user.is_private ? true : false,
+								verified: body.graphql.user.is_verified ? true : false,
+							},
+						};
 					});
-				}
-
-				console.log(body);
-
-				const data = {
-					url: `https://www.instagram.com/${body.graphql.user.username}/`,
-					user: {
-						thumbnail: body.graphql.user.profile_pic_url_hd,
-						full_name: body.graphql.user.full_name,
-						bio: body.graphql.user.biography,
-						username: body.graphql.user.username,
-						id: body.graphql.user.id,
-					},
-					account: {
-						followers: body.graphql.user.edge_followed_by.count,
-						following: body.graphql.user.edge_follow.count,
-						posts: body.graphql.user.edge_owner_to_timeline_media.count,
-						private: body.graphql.user.is_private ? true : false,
-						verified: body.graphql.user.is_verified ? true : false,
-					},
-				};
-
-				return new BaseObj({
-					success: true,
-					status: res.status,
-					statusMessage: res.statusText,
-					data: data,
-				});
 			} catch (error) {
 				if (error?.response?.status == 404) {
 					return new BaseObj({
