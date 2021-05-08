@@ -39,7 +39,7 @@ router.get('/endpoints', (req, res) => {
 });
 
 router.get('/test/:test/:tesst', (req, res) => {
-	console.log(req.params);
+	console.log(req.query);
 	res.json({ success: true, link: 'https://youtu.be/dQw4w9WgXcQ' });
 });
 
