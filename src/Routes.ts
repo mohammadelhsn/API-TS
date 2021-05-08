@@ -81,7 +81,7 @@ router.get('/discord/', async (req, res) => {
 });
 
 router.get('/subreddit/', async (req, res) => {
-	if (req.query.subreddit) {
+	if (!req.query.subreddit) {
 		return res.json(
 			new BaseObj({
 				success: false,
