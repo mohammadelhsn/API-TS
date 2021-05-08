@@ -153,13 +153,11 @@ namespace Functions {
 		async Subreddit(user: string) {
 			try {
 				const res = await axios.get(
-					`https://www.reddit.com/user/${user}/about.json`
+					`https://www.reddit.com/r/${user}/about.json`
 				);
 				const body = <Funcs.Subreddit>res.data.data;
 
 				const { Capitalize, FormatNumber } = new Utils();
-
-				console.log(body.subreddit_type);
 
 				const data = {
 					url: `https://www.reddit.com/${body.url}`,
