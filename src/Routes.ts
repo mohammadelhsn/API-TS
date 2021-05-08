@@ -40,7 +40,7 @@ router.get('/endpoints', (req, res) => {
 
 router.get('/test/', (req, res) => {
 	if (!req.query.id) {
-		res.json(
+		return res.json(
 			new BaseObj({
 				success: false,
 				status: 400,
