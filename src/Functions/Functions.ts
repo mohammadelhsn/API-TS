@@ -116,27 +116,27 @@ namespace Functions {
 				};
 
 				return new BaseObj({
-					success: true, 
+					success: true,
 					status: 200,
-					statusMessage: "OK",
-					data: data
-				})
+					statusMessage: 'OK',
+					data: data,
+				});
 			} catch (error) {
 				if (error?.httpStatus == 400) {
 					return new BaseObj({
 						success: false,
 						status: 400,
-						statusMessage: "Provided query is not a snowflake (ID)",
-						data: null
-					})
+						statusMessage: 'Provided query is not a snowflake (ID)',
+						data: null,
+					});
 				}
 				if (error?.httpStatus == 404) {
 					return new BaseObj({
 						success: false,
 						status: 404,
 						statusMessage: "This user doesn't exist or is banned",
-						data: null
-					})
+						data: null,
+					});
 				}
 
 				console.log(error);
@@ -144,9 +144,9 @@ namespace Functions {
 				return new BaseObj({
 					success: false,
 					status: 500,
-					statusMessage: "An unexpected error has occurred",
-					data: null
-				})
+					statusMessage: 'An unexpected error has occurred',
+					data: null,
+				});
 			}
 		}
 		async Subreddit(user: string) {}
