@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
+import { Snowflake } from 'discord.js';
 
 const router = Router();
 
@@ -22,6 +23,14 @@ router.get(`/roblox/:query`, async (req, res) => {
 	const { Roblox } = new Funcs();
 
 	res.json(await Roblox(username));
+});
+
+router.get('/discord/:query', async (req, res) => {
+	const id: Snowflake = req.params.query;
+
+	const { Discord } = new Funcs();
+
+	res.json(await Discord(id));
 });
 
 export default router;

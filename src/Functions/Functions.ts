@@ -6,6 +6,7 @@ import BaseObj from '../Structures/BaseObj';
 import Funcs from '../Interfaces/Funcs';
 
 dotenv.config();
+
 const client = new Client();
 
 namespace Functions {
@@ -69,7 +70,85 @@ namespace Functions {
 				});
 			}
 		}
-		async Discord(user: Snowflake) {}
+		async Discord(user: Snowflake) {
+			const flags = {
+				DISCORD_EMPLOYEE: `Discord employee`,
+				DISCORD_PARTNER: `Discord partner`,
+				BUGHUNTER_LEVEL_1: `Level 1 bug hunter`,
+				BUGHUNTER_LEVEL_2: `Level 2 bug hunter`,
+				HYPESQUAD_EVENTS: `Hypesquad events`,
+				HOUSE_BRAVERY: `Hypesquad bravery`,
+				HOUSE_BRILLIANCE: `Hypesquad brilliance`,
+				HOUSE_BALANCE: `Hypesquad balance`,
+				EARLY_SUPPORTER: `Early supporter`,
+				TEAM_USER: 'Team User',
+				SYSTEM: `System`,
+				VERIFIED_BOT: `Bot emoji`,
+				VERIFIED_DEVELOPER: `Verified discord bot developer`,
+			};
+
+			try {
+				const res = await client.users.fetch(user);
+				const userflag = new UserFlags(res.flags);
+				const userFlag = userflag.toArray();
+				const userflags = `${
+					userFlag.length ? userFlag.map((f) => flags[f]).join(' ') : null
+				}`;
+
+				if (!res)
+					return new BaseObj({
+						success: true,
+						status: 404,
+						statusMessage: 'User not found',
+						data: null,
+					});
+
+				const data = {
+					username: res.username,
+					id: res.id,
+					tag: `${res.username}#${res.discriminator}`,
+					system: res.system,
+					bot: res.bot,
+					discriminator: res.discriminator,
+					createdAt: res.createdAt,
+					pfp: res.displayAvatarURL({ dynamic: true }),
+					flags: userflags,
+				};
+
+				return new BaseObj({
+					success: true, 
+					status: 200,
+					statusMessage: "OK",
+					data: data
+				})
+			} catch (error) {
+				if (error?.httpStatus == 400) {
+					return new BaseObj({
+						success: false,
+						status: 400,
+						statusMessage: "Provided query is not a snowflake (ID)",
+						data: null
+					})
+				}
+				if (error?.httpStatus == 404) {
+					return new BaseObj({
+						success: false,
+						status: 404,
+						statusMessage: "This user doesn't exist or is banned",
+						data: null
+					})
+				}
+
+				console.log(error);
+
+				return new BaseObj({
+					success: false,
+					status: 500,
+					statusMessage: "An unexpected error has occurred",
+					data: null
+				})
+			}
+		}
 		async Subreddit(user: string) {}
 		async User(user: string) {}
 	}
