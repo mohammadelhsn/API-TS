@@ -13,8 +13,28 @@ router.get('/', (req, res) => {
 	res.sendStatus(200);
 });
 
+router.get('/endpoints', (req, res) => {
+	res.json([
+		{ path: '/test', methods: ['GET'], params: 'None', status: 'Working' },
+		{
+			path: '/roblox',
+			methods: ['GET'],
+			params: [
+				{ name: 'username', type: 'string', description: 'The users username' },
+			],
+			status: 'Working',
+		},
+		{
+			path: '/discord',
+			methods: ['GET'],
+			params: [{ name: 'ID', type: 'string', description: 'The users ID' }],
+			status: 'Working',
+		},
+	]);
+});
+
 router.get('/test', (req, res) => {
-	res.json({ test: true, data: { link: 'https://youtu.be/dQw4w9WgXcQ' } });
+	res.json({ success: true, link: 'https://youtu.be/dQw4w9WgXcQ' });
 });
 
 router.get(`/roblox/:query`, async (req, res) => {
