@@ -39,7 +39,17 @@ router.get('/endpoints', (req, res) => {
 });
 
 router.get('/test/', (req, res) => {
-	console.log(req.query);
+	if (!req.query.id) {
+		res.json(
+			new BaseObj({
+				success: false,
+				status: 400,
+				statusMessage: 'Missing id query',
+				data: null,
+			})
+		);
+	}
+
 	res.json({ success: true, link: 'https://youtu.be/dQw4w9WgXcQ' });
 });
 
