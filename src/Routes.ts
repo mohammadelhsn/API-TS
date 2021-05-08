@@ -39,22 +39,22 @@ router.get('/endpoints', (req, res) => {
 });
 
 router.get('/test/', (req, res) => {
-	if (!req.query.id) {
+	res.json({ success: true, link: 'https://youtu.be/dQw4w9WgXcQ' });
+});
+
+router.get(`/roblox/`, async (req, res) => {
+	if (!req.query.username) {
 		return res.json(
 			new BaseObj({
 				success: false,
 				status: 400,
-				statusMessage: 'Missing id query',
+				statusMessage: 'Missing username query',
 				data: null,
 			})
 		);
 	}
 
-	res.json({ success: true, link: 'https://youtu.be/dQw4w9WgXcQ' });
-});
-
-router.get(`/roblox/:query`, async (req, res) => {
-	const username = req.params.query;
+	const username = req.query.username as string;
 
 	const { Roblox } = new Funcs();
 
@@ -62,7 +62,18 @@ router.get(`/roblox/:query`, async (req, res) => {
 });
 
 router.get('/discord/:query', async (req, res) => {
-	const id: Snowflake = req.params.query;
+	if (!req.query.id) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 400,
+				statusMessage: 'Missing username query',
+				data: null,
+			})
+		);
+	}
+
+	const id = req.query.id as string;
 
 	const { Discord } = new Funcs();
 
