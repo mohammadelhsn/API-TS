@@ -15,7 +15,7 @@
 		"ts-node-dev": "^1.1.6"
 	},
 	"scripts": {
-		"start": "node ./src/Index.ts"
+		"start": "nodemon ./src/Index.ts"
 	},
 	"keywords": [],
 	"author": "",
