@@ -37,6 +37,8 @@ namespace Functions {
 					});
 				}
 
+				console.log(body);
+
 				const data = {
 					url: `https://www.instagram.com/${body.graphql.user.username}/`,
 					user: {
