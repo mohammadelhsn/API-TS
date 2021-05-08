@@ -7,7 +7,10 @@ const router = Router();
 
 const { Utils, Funcs } = Functions;
 
-router.use((req, res, next) => next());
+router.use((req, res, next) => {
+	res.json({ docs: 'https://processversion.herokuapp.com/endpoints' });
+	next();
+});
 
 router.get('/', (req, res) => {
 	res.sendStatus(200);
