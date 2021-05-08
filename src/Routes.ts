@@ -12,7 +12,10 @@ router.use((req, res, next) => {
 });
 
 router.get('/', (req, res) => {
-	res.redirect('/endpoints');
+	res.json({
+		docs: 'Not available',
+		endpoints: `https://processversion.herokuapp.com/endpoints`,
+	});
 });
 
 router.get('/endpoints', (req, res) => {
