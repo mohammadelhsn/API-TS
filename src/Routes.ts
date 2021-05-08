@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/test', (req, res) => {
-	res.json({ test: true, data: { hi: 'Hi!' } });
+	res.json({ test: true, data: { link: 'https://youtu.be/dQw4w9WgXcQ' } });
 });
 
 export default router;
