@@ -4,6 +4,7 @@ import Roblox from 'noblox.js';
 import * as dotenv from 'dotenv';
 import BaseObj from '../Structures/BaseObj';
 import Funcs from '../Interfaces/Funcs';
+import moment from 'moment';
 
 dotenv.config();
 
@@ -154,9 +155,50 @@ namespace Functions {
 				const res = await axios.get(
 					`https://www.reddit.com/user/${user}/about.json`
 				);
-				const body = res.data;
+				const body = <Funcs.Subreddit>res.data.data;
 
-				console.log(body);
+				const { Capitalize, FormatNumber } = new Utils();
+
+				const data = {
+					url: `https://www.reddit.com/${body.url}`,
+					name_prefix: body.display_name_prefixed,
+					name: body.display_name,
+					title: body.title,
+					description: body.public_description,
+					created: moment
+						.unix(body.created)
+						.format('dddd, MMMM Do YYYY, h:mm:ss a'),
+					created_utc: moment
+						.utc(body.created_utc)
+						.format('dddd, MMMM Do YYYY, h:mm:ss a'),
+					type: Capitalize(body.subreddit_type),
+					over18: body.over18,
+					quarantined: body.quarantine,
+					lang: Capitalize(body.lang),
+					members: {
+						online: FormatNumber(body.accounts_active),
+						subscribers: FormatNumber(body.subscribers),
+					},
+					colors: {
+						primary_color: body.primary_color,
+						key_color: body.key_color,
+					},
+					images: {
+						header_img: body.header_img.replace(/(amp;)/gi, ''),
+						community_icon: body.community_icon.replace(/(amp;)/gi, ''),
+						background_img: body.banner_background_image.replace(
+							/(amp;)/gi,
+							''
+						),
+					},
+				};
+
+				return new BaseObj({
+					success: true,
+					status: 200,
+					statusMessage: 'OK',
+					data: data,
+				});
 			} catch (error) {
 				console.log(error);
 			}
