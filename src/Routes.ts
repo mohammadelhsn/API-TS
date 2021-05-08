@@ -80,4 +80,22 @@ router.get('/discord/', async (req, res) => {
 	return res.json(await Discord(id));
 });
 
+router.get('/subreddit/', async (req, res) => {
+	if (req.query.subreddit) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 400,
+				statusMessage: 'Missing subreddit query',
+				data: null,
+			})
+		);
+	}
+
+	const subreddit = req.query.subreddit as string;
+
+	const { Subreddit } = new Funcs();
+	return res.json(await Subreddit(subreddit));
+});
+
 export default router;
