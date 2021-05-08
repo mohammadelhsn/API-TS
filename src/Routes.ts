@@ -61,7 +61,7 @@ router.get(`/roblox/`, async (req, res) => {
 	return res.json(await Roblox(username));
 });
 
-router.get('/discord/:query', async (req, res) => {
+router.get('/discord/', async (req, res) => {
 	if (!req.query.id) {
 		return res.json(
 			new BaseObj({
