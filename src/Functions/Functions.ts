@@ -23,11 +23,24 @@ namespace Functions {
 			try {
 				const id = await Roblox.getIdFromUsername(user);
 
-				const { FormatNumber, Capitalize } = new Utils();
+				const { FormatNumber } = new Utils();
 
 				if (id) {
 					const info = await Roblox.getPlayerInfo(id);
-
+					if (info.isBanned == true) {
+						const data = {
+							username: info.username,
+							thumbnail: `https://www.roblox.com/bust-thumbnail/image?userId=${id}&width=420&height=420&format=png`,
+							bio: info.blurb ? info.blurb : 'N/A',
+							joinDate: info.joinDate,
+						};
+						return new BaseObj({
+							success: true,
+							status: 200,
+							statusMessage: 'OK',
+							data: data,
+						});
+					}
 					const data = {
 						isBanned: info.isBanned,
 						username: info.username,
