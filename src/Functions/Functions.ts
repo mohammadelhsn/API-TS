@@ -62,7 +62,7 @@ namespace Functions {
 					data: data,
 				});
 			} catch (error) {
-				if (error.response.status == 404) {
+				if (error?.response?.status == 404) {
 					return new BaseObj({
 						success: false,
 						status: error?.response?.status,
