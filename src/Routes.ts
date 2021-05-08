@@ -12,13 +12,8 @@ router.get('/', (req, res) => {
 	res.sendStatus(200);
 });
 
-router.get('/insta/:query', async (req, res) => {
-	const username: string = req.params.query;
-
-	const { Instagram } = new Funcs();
-
-	const response = await Instagram(username);
-	return res.json(response);
+router.get('/test', (req, res) => {
+	res.json({ test: true, data: { hi: 'Hi!' } });
 });
 
 export default router;
