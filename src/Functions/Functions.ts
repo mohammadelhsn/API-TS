@@ -149,7 +149,18 @@ namespace Functions {
 				});
 			}
 		}
-		async Subreddit(user: string) {}
+		async Subreddit(user: string) {
+			try {
+				const res = await axios.get(
+					`https://www.reddit.com/user/${user}/about.json`
+				);
+				const body = res.data;
+
+				console.log(body);
+			} catch (error) {
+				console.log(error);
+			}
+		}
 		async User(user: string) {}
 	}
 }
