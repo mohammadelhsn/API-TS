@@ -159,6 +159,8 @@ namespace Functions {
 
 				const { Capitalize, FormatNumber } = new Utils();
 
+				console.log(body.subreddit_type);
+
 				const data = {
 					url: `https://www.reddit.com/${body.url}`,
 					name_prefix: body.display_name_prefixed,
