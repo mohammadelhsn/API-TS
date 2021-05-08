@@ -39,7 +39,7 @@ router.get('/endpoints', (req, res) => {
 });
 
 router.get('/test/', (req, res) => {
-	res.json({ success: true, link: 'https://youtu.be/dQw4w9WgXcQ' });
+	return res.json({ success: true, link: 'https://youtu.be/dQw4w9WgXcQ' });
 });
 
 router.get(`/roblox/`, async (req, res) => {
@@ -58,7 +58,7 @@ router.get(`/roblox/`, async (req, res) => {
 
 	const { Roblox } = new Funcs();
 
-	res.json(await Roblox(username));
+	return res.json(await Roblox(username));
 });
 
 router.get('/discord/:query', async (req, res) => {
@@ -77,7 +77,7 @@ router.get('/discord/:query', async (req, res) => {
 
 	const { Discord } = new Funcs();
 
-	res.json(await Discord(id));
+	return res.json(await Discord(id));
 });
 
 export default router;
