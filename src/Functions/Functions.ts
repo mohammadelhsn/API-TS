@@ -160,16 +160,13 @@ namespace Functions {
 				const { Capitalize, FormatNumber } = new Utils();
 
 				const data = {
-					url: `https://www.reddit.com/${body.url}`,
+					url: `https://www.reddit.com${body.url}`,
 					name_prefix: body.display_name_prefixed,
 					name: body.display_name,
 					title: body.title,
 					description: body.public_description,
 					created: moment
 						.unix(body.created)
-						.format('dddd, MMMM Do YYYY, h:mm:ss a'),
-					created_utc: moment
-						.utc(body.created_utc)
 						.format('dddd, MMMM Do YYYY, h:mm:ss a'),
 					type: Capitalize(body.subreddit_type),
 					over18: body.over18,
@@ -238,14 +235,15 @@ namespace Functions {
 				const { Capitalize, FormatNumber } = new Utils();
 
 				const data = {
-					url: `https://reddit.com/${body.data.subreddit.url}`,
+					url: `https://reddit.com${body.data.subreddit.url}`,
 					name: body.data.name,
 					name_prefixed: body.data.subreddit.display_name_prefixed,
 					id: body.data.id,
 					pfp: body.data.icon_img.replace(/(amp;)/gi, ''),
 					verified: body.data.verified,
-					created: moment.unix(body.data.created).format(''),
-					created_utc: moment.utc(body.data.created_utc).format(''),
+					created: moment
+						.unix(body.data.created)
+						.format('dddd, MMMM Do YYYY, h:mm:ss a'),
 					total_karma: FormatNumber(body.data.total_karma),
 					link_karma: FormatNumber(body.data.link_karma),
 					awarder_karma: body.data.awarder_karma,
@@ -268,7 +266,7 @@ namespace Functions {
 						status: 404,
 						statusMessage: "I couldn't find this user!",
 						data: null,
-					})
+					});
 				}
 
 				console.log(error);
