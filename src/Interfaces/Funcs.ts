@@ -129,6 +129,70 @@ namespace Funcs {
 		user_is_contributor: any;
 		allow_predictions_tournament: boolean;
 	};
+
+	export type User = {
+		kind: string;
+		data: {
+			is_employee: boolean;
+			is_friend: boolean;
+			subreddit: {
+				default_set: boolean;
+				user_is_contributor: any;
+				banner_img: string;
+				restrict_posting: true;
+				user_is_banned: any;
+				free_form_reports: boolean;
+				community_icon: any;
+				show_media: boolean;
+				icon_color: string;
+				display_name: string;
+				header_img: any;
+				title: string;
+				priveous_names: string[];
+				over_18: boolean;
+				icon_size: number[];
+				primary_color: string;
+				icon_img: string;
+				description: string;
+				submit_link_label: string;
+				header_size: any;
+				is_default_icon: boolean;
+				link_flair_position: string;
+				display_name_prefixed: string;
+				key_color: string;
+				name: string;
+				is_default_banner: boolean;
+				url: string;
+				quarantine: boolean;
+				banner_size: any;
+				user_is_moderator: any;
+				public_description: string;
+				link_flair_enabled: boolean;
+				disable_contributor_requests: boolean;
+				subreddit_type: string;
+				user_is_subscriber: any;
+			};
+			snoovatar_size: any;
+			awardee_karma: number;
+			id: string;
+			verified: boolean;
+			is_gold: boolean;
+			is_mod: boolean;
+			awarder_karma: number;
+			has_verified_email: boolean;
+			icon_img: string;
+			hide_from_robots: boolean;
+			link_karma: number;
+			total_karma: number;
+			pref_show_snoovatar: boolean;
+			name: string;
+			created: number;
+			created_utc: number;
+			snoovatar_img: string;
+			comment_karma: number;
+			has_subscribed: boolean;
+		};
+	};
 }
 
 export = Funcs;

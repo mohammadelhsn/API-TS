@@ -200,10 +200,87 @@ namespace Functions {
 					data: data,
 				});
 			} catch (error) {
+				if (error?.response?.status == 404) {
+					return new BaseObj({
+						success: false,
+						status: 404,
+						statusMessage: 'Subreddit not found',
+						data: null,
+					});
+				}
+
 				console.log(error);
+
+				return new BaseObj({
+					success: false,
+					status: 500,
+					statusMessage: 'An unexpected error has occurred',
+					data: null,
+				});
 			}
 		}
-		async User(user: string) {}
+		async User(user: string) {
+			try {
+				const res = await axios.get(
+					`https://www.reddit.com/user/${user}/about.json`
+				);
+				const body = <Funcs.User>res.data;
+
+				if (body.data.hide_from_robots == true) {
+					return new BaseObj({
+						success: true,
+						status: 200,
+						statusMessage: 'OK',
+						data: { hideden: true },
+					});
+				}
+
+				const { Capitalize, FormatNumber } = new Utils();
+
+				const data = {
+					url: `https://reddit.com/${body.data.subreddit.url}`,
+					name: body.data.name,
+					name_prefixed: body.data.subreddit.display_name_prefixed,
+					id: body.data.id,
+					pfp: body.data.icon_img.replace(/(amp;)/gi, ''),
+					verified: body.data.verified,
+					created: moment.unix(body.data.created).format(''),
+					created_utc: moment.utc(body.data.created_utc).format(''),
+					total_karma: FormatNumber(body.data.total_karma),
+					link_karma: FormatNumber(body.data.link_karma),
+					awarder_karma: body.data.awarder_karma,
+					awardee_karma: body.data.awardee_karma,
+					mod: body.data.is_mod,
+					gold: body.data.is_gold,
+					employee: body.data.is_employee,
+				};
+
+				return new BaseObj({
+					success: true,
+					status: 200,
+					statusMessage: 'OK',
+					data: data,
+				});
+			} catch (error) {
+				if (error?.response?.status == 404) {
+					return new BaseObj({
+						success: false,
+						status: 404,
+						statusMessage: "I couldn't find this user!",
+						data: null,
+					})
+				}
+
+				console.log(error);
+
+				return new BaseObj({
+					success: false,
+					status: 500,
+					statusMessage: 'An unexpected error has occurred',
+					data: null,
+				});
+			}
+		}
 	}
 }
 

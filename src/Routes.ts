@@ -98,4 +98,22 @@ router.get('/subreddit/', async (req, res) => {
 	return res.json(await Subreddit(subreddit));
 });
 
+router.get('/reddit/', async (req, res) => {
+	if (!req.query.user) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 400,
+				statusMessage: 'Missing user query',
+				data: null,
+			})
+		); 
+	}
+
+	const user = req.query.user as string;
+
+	const { User } = new Funcs();
+	return res.json(await User(user))
+})
+
 export default router;
