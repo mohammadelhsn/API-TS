@@ -3,7 +3,6 @@ import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
 import { Snowflake } from 'discord.js';
 import db from 'quick.db';
-import { Console } from 'console';
 
 const router = Router();
 
@@ -149,7 +148,8 @@ router.get('/reverse/', (req, res) => {
 });
 
 router.post('/newuser/', (req, res) => {
-	return res.json(req.body);
+	console.log(req.body);
+	return res.json({ success: 'hello' });
 });
 
 export default router;
