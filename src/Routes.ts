@@ -107,13 +107,37 @@ router.get('/reddit/', async (req, res) => {
 				statusMessage: 'Missing user query',
 				data: null,
 			})
-		); 
+		);
 	}
 
 	const user = req.query.user as string;
 
 	const { User } = new Funcs();
-	return res.json(await User(user))
-})
+	return res.json(await User(user));
+});
+
+router.get('/reverse/', async (req, res) => {
+	if (!req.query.text) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 400,
+				statusMessage: 'Missing text query',
+				data: null,
+			})
+		);
+	}
+
+	function reverse(s) {
+		return [...s].reverse().join('');
+	}
+
+	return new BaseObj({
+		success: true,
+		status: 200,
+		statusMessage: 'OK',
+		data: { text: reverse(req.query.text) },
+	});
+});
 
 export default router;
