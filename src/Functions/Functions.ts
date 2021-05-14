@@ -280,7 +280,8 @@ namespace Functions {
 			}
 		}
 		reverse(s) {
-			console.log(typeof s);
+			console.log(s);
+			console.log('Type', typeof s);
 			return [...s].reverse().join('');
 		}
 	}
