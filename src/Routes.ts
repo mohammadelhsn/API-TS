@@ -2,6 +2,8 @@ import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
 import { Snowflake } from 'discord.js';
+import db from 'quick.db';
+import { Console } from 'console';
 
 const router = Router();
 
@@ -144,6 +146,10 @@ router.get('/reverse/', (req, res) => {
 	} catch (error) {
 		console.log(error);
 	}
+});
+
+router.post('/newuser', (req, res) => {
+	console.log(req.body);
 });
 
 export default router;
