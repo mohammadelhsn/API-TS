@@ -149,7 +149,7 @@ router.get('/reverse/', (req, res) => {
 });
 
 router.post('/newuser/', (req, res) => {
-	console.log(req.body);
+	return res.json(req.body);
 });
 
 export default router;
