@@ -116,7 +116,7 @@ router.get('/reddit/', async (req, res) => {
 	return res.json(await User(user));
 });
 
-router.get('/reverse/', async (req, res) => {
+router.get('/reverse/', (req, res) => {
 	try {
 		if (!req.query.text) {
 			return res.json(
