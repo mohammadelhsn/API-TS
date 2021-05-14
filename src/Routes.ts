@@ -129,12 +129,14 @@ router.get('/reverse/', (req, res) => {
 			);
 		}
 
-		return new BaseObj({
-			success: true,
-			status: 200,
-			statusMessage: 'OK',
-			data: { text: new Funcs().reverse(req.query.text) },
-		});
+		return res.json(
+			new BaseObj({
+				success: true,
+				status: 200,
+				statusMessage: 'OK',
+				data: { text: new Funcs().reverse(req.query.text) },
+			})
+		);
 	} catch (error) {
 		console.log(error);
 	}
