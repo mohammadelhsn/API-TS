@@ -8,6 +8,8 @@ const app = express();
 
 app.use(express.json());
 
+app.use(express.urlencoded());
+
 app.set('trust proxy', true);
 
 app.use((req, res, next) => next());
