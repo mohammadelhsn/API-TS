@@ -133,7 +133,7 @@ router.get('/reverse/', async (req, res) => {
 			success: true,
 			status: 200,
 			statusMessage: 'OK',
-			data: { text: reverse(req.query.text) },
+			data: { text: new Funcs().reverse(req.query.text) },
 		});
 	} catch (error) {
 		console.log(error);
