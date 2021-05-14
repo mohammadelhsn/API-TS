@@ -148,7 +148,7 @@ router.get('/reverse/', (req, res) => {
 	}
 });
 
-router.post('/newuser', (req, res) => {
+router.post('/newuser/', (req, res) => {
 	console.log(req.body);
 });
 
