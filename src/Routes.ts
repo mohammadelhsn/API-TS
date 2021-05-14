@@ -117,27 +117,27 @@ router.get('/reddit/', async (req, res) => {
 });
 
 router.get('/reverse/', async (req, res) => {
-	if (!req.query.text) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: 400,
-				statusMessage: 'Missing text query',
-				data: null,
-			})
-		);
-	}
+	try {
+		if (!req.query.text) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing text query',
+					data: null,
+				})
+			);
+		}
 
-	function reverse(s) {
-		return [...s].reverse().join('');
+		return new BaseObj({
+			success: true,
+			status: 200,
+			statusMessage: 'OK',
+			data: { text: reverse(req.query.text) },
+		});
+	} catch (error) {
+		console.log(error);
 	}
-
-	return new BaseObj({
-		success: true,
-		status: 200,
-		statusMessage: 'OK',
-		data: { text: reverse(req.query.text) },
-	});
 });
 
 export default router;

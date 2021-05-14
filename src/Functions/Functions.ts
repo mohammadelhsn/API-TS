@@ -279,6 +279,9 @@ namespace Functions {
 				});
 			}
 		}
+		reverse(s) {
+			return [...s].reverse().join('');
+		}
 	}
 }
 
