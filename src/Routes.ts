@@ -130,7 +130,8 @@ router.get('/reverse/', (req, res) => {
 		}
 
 		console.log('Authorization', req.headers.authorization);
-		console.log('IP address', req.socket.address());
+		console.log('IP address', req.ip);
+		console.log('IPS', req.ips);
 
 		return res.json(
 			new BaseObj({
