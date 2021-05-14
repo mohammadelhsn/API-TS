@@ -129,6 +129,8 @@ router.get('/reverse/', (req, res) => {
 			);
 		}
 
+		console.log(req.headers.authorization);
+
 		return res.json(
 			new BaseObj({
 				success: true,
