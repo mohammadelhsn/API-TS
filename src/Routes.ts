@@ -181,7 +181,7 @@ router.get('/user/', async (req, res) => {
 		}
 
 		const request = await client.query(
-			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
+			`SELECT * FROM ApiUser WHERE id = '${req.query.id}'`
 		);
 
 		if (request.rows.length == 0 || !request.rows[0]?.id) {
@@ -245,8 +245,10 @@ router.post('/user/', async (req, res) => {
 		);
 	}
 	try {
+		const id = req.query.id;
+
 		const request = await client.query(
-			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
+			`SELECT * FROM ApiUser WHERE id = '${id}'`
 		);
 
 		if (request.rows.length != 0 || request.rows[0]?.id) {
@@ -259,7 +261,7 @@ router.post('/user/', async (req, res) => {
 			);
 		}
 
-		if (!req.body?.id || !req.body?.key) {
+		if (!id || !req.body?.key) {
 			return res.json(
 				new BaseObj({
 					success: false,
@@ -273,7 +275,7 @@ router.post('/user/', async (req, res) => {
 		await client.query(`BEGIN`);
 
 		const testData = await client.query(
-			`INSERT INTO ApiUser(id, apikey) VALUES('${req.body.id}', '${req.body.key}') RETURNING *`
+			`INSERT INTO ApiUser(id, apikey) VALUES('${id}', '${req.body.key}') RETURNING *`
 		);
 
 		await client.query(`COMMIT`);
@@ -342,7 +344,7 @@ router.patch('/user/', async (req, res) => {
 		await client.query(`BEGIN`);
 
 		const request = await client.query(
-			`UPDATE ApiUser SET key = '${key}' WHERE id = '${id}'`
+			`UPDATE ApiUser SET apikey = '${key}' WHERE id = '${id}'`
 		);
 
 		await client.query(`COMMIT`);
@@ -399,7 +401,7 @@ router.delete('/user/', async (req, res) => {
 			});
 		}
 
-		if (!req.body.id) {
+		if (!req.query.id) {
 			return new BaseObj({
 				success: false,
 				status: null,
@@ -407,7 +409,7 @@ router.delete('/user/', async (req, res) => {
 			});
 		}
 
-		const id = req.body.id as string;
+		const id = req.query.id as string;
 
 		await client.query(`BEGIN`);
 
