@@ -3,7 +3,6 @@ import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
 import { Snowflake } from 'discord.js';
 import { Pool } from 'pg';
-import { isPropertyAccessChain } from 'typescript';
 
 const client = new Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -14,8 +13,9 @@ const router = Router();
 
 const { Utils, Funcs } = Functions;
 
-router.use((req, res, next) => {
+router.use(async (req, res, next) => {
 	next();
+	await client.connect();
 });
 
 router.get('/', (req, res) => {
@@ -235,8 +235,6 @@ router.delete('/user/', (req, res) => {
 
 router.post(`/init/`, async (req, res) => {
 	try {
-		await client.connect();
-
 		const request = await client.query(
 			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
 		);
@@ -255,15 +253,15 @@ router.post(`/init/`, async (req, res) => {
 			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
 		);
 
+		console.log(testData.rows[0]);
+
 		const data = {
 			id: testData.rows[0].id,
 			key: testData.rows[0].key,
 			ip: testData.rows[0].ips,
 		};
 
-		res.json(data);
-
-		return await client.end();
+		return res.json(data);
 	} catch (error) {
 		console.log(error);
 	}
