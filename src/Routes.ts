@@ -278,6 +278,9 @@ router.delete('/user/', (req, res) => {
 	const id = req.body.id as string;
 });
 
-router.post(`/init/`, async (req, res) => {});
+router.get(`/test/`, async (req, res) => {
+	console.log(req.headers.authorization);
+	console.log(req.query?.key);
+});
 
 export default router;
