@@ -2,9 +2,14 @@ import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
 import { Snowflake } from 'discord.js';
-import { PoolClient } from 'pg';
+import { PoolClient, Pool } from 'pg';
 
-const client = globalThis.client as PoolClient;
+const client = new Pool({
+	connectionString: process.env.DATABASE_URL,
+	ssl: { rejectUnauthorized: false },
+});
+
+client.connect();
 
 const router = Router();
 

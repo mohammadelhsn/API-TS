@@ -2,10 +2,6 @@ import express from 'express';
 import Routes from './Routes';
 import * as dotenv from 'dotenv';
 import { Pool } from 'pg';
-const client = new Pool({
-	connectionString: process.env.DATABASE_URL,
-	ssl: { rejectUnauthorized: false },
-});
 
 dotenv.config();
 
@@ -24,8 +20,3 @@ app.use('/', Routes);
 app.listen(process.env.PORT || 3000, () => {
 	console.log(`Running app on #3000`);
 });
-
-async function getClient() {
-	globalThis.client = await client.connect();
-}
-getClient();
