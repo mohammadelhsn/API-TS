@@ -241,7 +241,7 @@ router.post(`/init/`, async (req, res) => {
 			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
 		);
 
-		if (request.rows.length != 0 || request.rows[0].id) {
+		if (request.rows.length != 0 || request.rows[0]?.id) {
 			return res.json(
 				new BaseObj({
 					success: false,
