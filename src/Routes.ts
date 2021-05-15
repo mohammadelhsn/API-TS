@@ -21,14 +21,33 @@ router.use((req, res, next) => {
 
 router.get('/', (req, res) => {
 	res.json({
-		docs: 'Not available',
+		docs: 'https://processversion.herokuapp.com/docs',
 		endpoints: `https://processversion.herokuapp.com/endpoints`,
 	});
 });
 
+router.get('/docs', (req, res) => {
+	res.redirect(`https://github.com/ProcessVersion/processversion-api#readme`);
+})
+
 router.get('/endpoints', (req, res) => {
 	res.json([
-		{ path: '/test', methods: ['GET'], params: 'None', status: 'Working' },
+		{
+			path: '/reddit',
+			methods: ['GET'],
+			params: [
+				{ name: 'user', type: 'string', description: 'Reddit username' },
+			],
+			status: 'Working',
+		},
+		{
+			path: '/subreddit',
+			methods: ['GET'],
+			params: [
+				{ name: 'subreddit', type: 'string', description: 'Subreddit name' },
+			],
+			status: 'Working',
+		},
 		{
 			path: '/roblox',
 			methods: ['GET'],
@@ -41,6 +60,12 @@ router.get('/endpoints', (req, res) => {
 			path: '/discord',
 			methods: ['GET'],
 			params: [{ name: 'ID', type: 'string', description: 'The users ID' }],
+			status: 'Working',
+		},
+		{
+			path: '/user',
+			methods: ['GET', 'PATCH', 'PUT', 'DELETE'],
+			params: null,
 			status: 'Working',
 		},
 	]);
@@ -285,7 +310,14 @@ router.post('/user/', async (req, res) => {
 			key: testData.rows[0].apikey,
 		};
 
-		return res.json(data);
+		return res.json(
+			new BaseObj({
+				success: true,
+				status: 200,
+				statusMessage: 'OK',
+				data: data,
+			})
+		);
 	} catch (error) {
 		console.log(error);
 
@@ -353,10 +385,17 @@ router.patch('/user/', async (req, res) => {
 
 		const data = {
 			id: index.id,
-			key: index.key,
+			key: index.apikey,
 		};
 
-		return res.json(data);
+		return res.json(
+			new BaseObj({
+				success: true,
+				status: 200,
+				statusMessage: 'OK',
+				data: data,
+			})
+		);
 	} catch (error) {
 		console.log(error);
 
@@ -365,6 +404,7 @@ router.patch('/user/', async (req, res) => {
 				success: false,
 				status: null,
 				statusMessage: 'An unexpected error has occurred',
+				data: null,
 			})
 		);
 	}
@@ -422,6 +462,7 @@ router.delete('/user/', async (req, res) => {
 				success: true,
 				status: 200,
 				statusMessage: 'OK',
+				data: null,
 			})
 		);
 	} catch (error) {
@@ -431,55 +472,9 @@ router.delete('/user/', async (req, res) => {
 			success: false,
 			status: null,
 			statusMessage: 'An unexpected error has occurred',
+			data: null,
 		});
 	}
-});
-
-router.get(`/test/`, async (req, res) => {
-	const key = req.headers.authorization || req.query?.key;
-
-	if (key == undefined) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: 500,
-				statusMessage: 'Missing token through authorization or query',
-			})
-		);
-	}
-
-	if (key != process.env.OWNER_KEY) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: null,
-				statusMessage: 'This is an owner only route',
-			})
-		);
-	}
-
-	const request = await client.query(
-		`SELECT * FROM ApiUser WHERE apikey = '${key}'`
-	);
-
-	if (!request.rows[0]) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: null,
-				statusMessage: 'Invalid key',
-			})
-		);
-	}
-
-	const index = request.rows[0];
-
-	const data = {
-		id: index.id,
-		apikey: index.apikey,
-	};
-
-	return res.json(data);
 });
 
 export default router;
