@@ -2,9 +2,9 @@ import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
 import { Snowflake } from 'discord.js';
-import { Pool } from 'pg';
+import { PoolClient } from 'pg';
 
-const client = globalThis.client as Pool;
+const client = globalThis.client as PoolClient;
 
 const router = Router();
 
@@ -231,6 +231,8 @@ router.delete('/user/', (req, res) => {
 
 router.post(`/init/`, async (req, res) => {
 	try {
+		console.log(globalThis.client);
+
 		const request = await client.query(
 			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
 		);
