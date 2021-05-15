@@ -158,20 +158,57 @@ router.get('/user/', (req, res) => {
 			})
 		);
 	}
-})
+
+	const id = req.query.id as string;
+
+	const user = db.get(id);
+	res.json({ user: user });
+});
 
 router.post('/user/', (req, res) => {
 	console.log(req.body);
-	return res.json({ success: 'hello' });
+
+	if (!req.body) {
+		return new BaseObj({
+			success: false,
+			status: null,
+			statusMessage: 'Missing a required param',
+		});
+	}
+
+	if (!req.body.id || !req.body.key) {
+		return new BaseObj({
+			success: false,
+			status: null,
+			statusMessage: 'Incorrect format',
+		});
+	}
+
+	const id = req.body.id as string;
+	const key = req.body.key as string;
+	const ip = req.ip;
+
+	db.set(id, { key: key, ips: [ip] });
+
+	const data = {
+		success: true,
+		data: {
+			id: id,
+			key: key,
+			ip: [ip],
+		},
+	};
+
+	return res.json(data);
 });
 
 router.patch('/user/', (req, res) => {
-	console.log(req.body)
+	console.log(req.body);
 	return res.json({ status: 'WIP' });
 });
 
 router.delete('/user/', (req, res) => {
-	console.log(req.body)
+	console.log(req.body);
 	return res.json({ status: 'WIP' });
 });
 
