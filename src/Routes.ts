@@ -342,7 +342,7 @@ router.patch('/user/', async (req, res) => {
 		await client.query(`BEGIN`);
 
 		const request = await client.query(
-			`INSERT INTO ApiUser(id, apikey) VALUES('${id}', '${key}') RETURNING *`
+			`UPDATE ApiUser SET key = '${key}' WHERE id = '${id}'`
 		);
 
 		await client.query(`COMMIT`);
