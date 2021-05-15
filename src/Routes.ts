@@ -236,11 +236,22 @@ router.delete('/user/', (req, res) => {
 router.post(`/init/`, async (req, res) => {
 	try {
 		await client.connect();
-		const testData = await client.query(
-			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}')`
+
+		const request = await client.query(
+			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
 		);
 
+		console.log(request);
+
+		const testData = await client.query(
+			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
+		);
+
+		res.json(testData[0]);
+
 		await client.end();
+
+		return;
 	} catch (error) {
 		console.log(error);
 	}
