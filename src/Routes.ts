@@ -147,9 +147,32 @@ router.get('/reverse/', (req, res) => {
 	}
 });
 
-router.post('/newuser/', (req, res) => {
+router.get('/user/', (req, res) => {
+	if (!req.query.id) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 400,
+				statusMessage: 'Missing id query',
+				data: null,
+			})
+		);
+	}
+})
+
+router.post('/user/', (req, res) => {
 	console.log(req.body);
 	return res.json({ success: 'hello' });
+});
+
+router.patch('/user/', (req, res) => {
+	console.log(req.body)
+	return res.json({ status: 'WIP' });
+});
+
+router.delete('/user/', (req, res) => {
+	console.log(req.body)
+	return res.json({ status: 'WIP' });
 });
 
 export default router;
