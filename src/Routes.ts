@@ -88,6 +88,16 @@ router.get(`/roblox/`, async (req, res) => {
 			`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
 		);
 
+		if (request.rows.length == 0) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'Provided key is invalid',
+				})
+			);
+		}
+
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
 			await client.query(`BEGIN`);
 			await client.query(
