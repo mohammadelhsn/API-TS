@@ -161,8 +161,18 @@ router.get('/user/', (req, res) => {
 
 	const id = req.query.id as string;
 
+	if (!db.has(id)) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 404,
+				statusMessage: "This user doesn't exist!",
+			})
+		);
+	}
+
 	const user = db.get(id);
-	res.json({ user: user });
+	return res.json({ user: user });
 });
 
 router.post('/user/', (req, res) => {
