@@ -84,6 +84,10 @@ router.get(`/roblox/`, async (req, res) => {
 		);
 	}
 
+	const request2 = await client.query(`SELECT * FROM ApiUser`);
+
+	console.log(request2.rows);
+
 	const request = await client.query(
 		`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
 	);
@@ -100,7 +104,7 @@ router.get(`/roblox/`, async (req, res) => {
 	if (request.rows.length > 0) {
 		const index = request.rows[0];
 
-		console.log("IP address", index);
+		console.log('IP address', index);
 	}
 
 	if (!req.query.username) {
