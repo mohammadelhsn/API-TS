@@ -217,9 +217,13 @@ router.post('/user/', async (req, res) => {
 			);
 		}
 
+		await client.query(`BEGIN`);
+
 		const testData = await client.query(
 			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
 		);
+
+		await client.query(`COMMIT`);
 
 		const data = {
 			id: testData.rows[0].id,
