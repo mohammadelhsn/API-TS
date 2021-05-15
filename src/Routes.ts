@@ -241,17 +241,29 @@ router.post(`/init/`, async (req, res) => {
 			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
 		);
 
-		console.log(request);
+		if (request.rows.length != 0 || request.rows[0].id) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'This user already exists in the database!',
+				})
+			);
+		}
 
 		const testData = await client.query(
 			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
 		);
 
-		res.json(testData[0]);
+		const data = {
+			id: testData.rows[0].id,
+			key: testData.rows[0].key,
+			ip: testData.rows[0].ips,
+		};
 
-		await client.end();
+		res.json(data);
 
-		return;
+		return await client.end();
 	} catch (error) {
 		console.log(error);
 	}
