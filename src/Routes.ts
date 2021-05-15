@@ -234,18 +234,22 @@ router.delete('/user/', (req, res) => {
 });
 
 router.post(`/init/`, async (req, res) => {
-	client.connect();
+	try {
+		client.connect();
 
-	const response = await client.query(
-		`CREATE TABLE user (id VARCHAR(100) NOT NULL PRIMARY KEY,apikey VARCHAR(100) NOT NULL,IP VARCHAR(100) NOT NULL)`
-	);
-	const testData = await client.query(
-		`INSERT INTO user VALUES(id, apikey, ip) VALUES($1, $2, $3) RETURNING *`,
-		[req.body.id, req.body.key, req.ip]
-	);
-	console.log(testData[0]);
+		//const response = await client.query(
+		//	`CREATE TABLE user (id VARCHAR(100) NOT NULL PRIMARY KEY,apikey VARCHAR(100) NOT NULL,IP VARCHAR(100) NOT NULL)`
+		//);
+		const testData = await client.query(
+			`INSERT INTO user VALUES(id, apikey, ip) VALUES($1, $2, $3) RETURNING *`,
+			[req.body.id, req.body.key, req.ip]
+		);
+		console.log(testData[0]);
 
-	client.end();
+		client.end();
+	} catch (error) {
+		console.log(error);
+	}
 });
 
 export default router;
