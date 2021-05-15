@@ -245,7 +245,7 @@ router.post('/user/', async (req, res) => {
 		);
 	}
 	try {
-		const id = req.query.id;
+		const id = req.body.id;
 
 		const request = await client.query(
 			`SELECT * FROM ApiUser WHERE id = '${id}'`
@@ -330,7 +330,7 @@ router.patch('/user/', async (req, res) => {
 			});
 		}
 
-		if (!req.body.id || !req.body.key) {
+		if (!req.query.id || !req.body.key) {
 			return new BaseObj({
 				success: false,
 				status: null,
@@ -338,7 +338,7 @@ router.patch('/user/', async (req, res) => {
 			});
 		}
 
-		const id = req.body.id;
+		const id = req.query.id;
 		const key = req.body.key;
 
 		await client.query(`BEGIN`);
