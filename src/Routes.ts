@@ -28,7 +28,7 @@ router.get('/', (req, res) => {
 
 router.get('/docs', (req, res) => {
 	res.redirect(`https://github.com/ProcessVersion/processversion-api#readme`);
-})
+});
 
 router.get('/endpoints', (req, res) => {
 	res.json([
@@ -72,6 +72,25 @@ router.get('/endpoints', (req, res) => {
 });
 
 router.get(`/roblox/`, async (req, res) => {
+	const key = req.headers.authorization || req.query?.key;
+
+	if (key == undefined) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 500,
+				statusMessage: 'Missing token through authorization or query',
+			})
+		);
+	}
+
+	const request = await client.query(
+		`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
+	);
+
+	console.log(request.rows[0]);
+	console.log(typeof request.rows[0]);
+
 	if (!req.query.username) {
 		return res.json(
 			new BaseObj({
