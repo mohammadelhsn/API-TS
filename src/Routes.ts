@@ -46,10 +46,6 @@ router.get('/endpoints', (req, res) => {
 	]);
 });
 
-router.get('/test/', (req, res) => {
-	return res.json({ success: true, link: 'https://youtu.be/dQw4w9WgXcQ' });
-});
-
 router.get(`/roblox/`, async (req, res) => {
 	if (!req.query.username) {
 		return res.json(
