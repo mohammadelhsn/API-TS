@@ -344,7 +344,7 @@ router.patch('/user/', async (req, res) => {
 		await client.query(`BEGIN`);
 
 		const request = await client.query(
-			`UPDATE ApiUser SET apikey = '${key}' WHERE id = '${id}'`
+			`UPDATE ApiUser SET apikey = '${key}' WHERE id = '${id}' RETURNING *`
 		);
 
 		await client.query(`COMMIT`);
