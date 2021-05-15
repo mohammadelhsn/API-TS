@@ -4,18 +4,14 @@ import Functions from './Functions/Functions';
 import { Snowflake } from 'discord.js';
 import { Pool } from 'pg';
 
-const client = new Pool({
-	connectionString: process.env.DATABASE_URL,
-	ssl: { rejectUnauthorized: false },
-});
+const client = globalThis.client as Pool;
 
 const router = Router();
 
 const { Utils, Funcs } = Functions;
 
-router.use(async (req, res, next) => {
+router.use((req, res, next) => {
 	next();
-	await client.connect();
 });
 
 router.get('/', (req, res) => {
@@ -253,11 +249,9 @@ router.post(`/init/`, async (req, res) => {
 			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
 		);
 
-		console.log(testData.rows[0]);
-
 		const data = {
 			id: testData.rows[0].id,
-			key: testData.rows[0].key,
+			key: testData.rows[0].apikey,
 			ip: testData.rows[0].ips,
 		};
 
