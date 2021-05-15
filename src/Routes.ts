@@ -275,9 +275,6 @@ router.delete('/user/', (req, res) => {
 });
 
 router.get(`/test/`, async (req, res) => {
-	console.log(req.headers.authorization);
-	console.log(req.query?.key);
-
 	const key = req.headers.authorization || req.query?.key;
 
 	if (key == undefined) {
@@ -286,6 +283,16 @@ router.get(`/test/`, async (req, res) => {
 				success: false,
 				status: 500,
 				statusMessage: 'Missing token through authorization or query',
+			})
+		);
+	}
+
+	if (key != process.env.OWNER_KEY) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'This is an owner only route',
 			})
 		);
 	}
