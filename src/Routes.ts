@@ -70,57 +70,75 @@ router.get('/endpoints', (req, res) => {
 });
 
 router.get(`/roblox/`, async (req, res) => {
-	const key = req.headers.authorization || req.query?.key;
-
 	const client = await Client.connect();
+	try {
+		const key = req.headers.authorization || req.query?.key;
 
-	if (key == undefined) {
+		if (key == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 500,
+					statusMessage: 'Missing token through authorization or query',
+				})
+			);
+		}
+
+		const request = await client.query(
+			`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
+		);
+
+		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			await client.query(`BEGIN`);
+			await client.query(
+				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}'`
+			);
+			console.log(`Successfully binded IP`);
+			await client.query(`COMMIT`);
+		}
+
+		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+
+		if (req.ip != ip) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage:
+						'Invalid IP address. Token is bound to the first IP address you used',
+				})
+			);
+		}
+
+		if (!req.query.username) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing username query',
+					data: null,
+				})
+			);
+		}
+
+		const username = req.query.username as string;
+
+		const { Roblox } = new Funcs();
+
+		return res.json(await Roblox(username));
+	} catch (error) {
+		console.log(error);
+
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: 500,
-				statusMessage: 'Missing token through authorization or query',
+				status: null,
+				statusMessage: 'An unexpected error has occurred',
 			})
 		);
+	} finally {
+		client.release();
 	}
-
-	const request = await client.query(
-		`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
-	);
-
-	if (request.rows.length == 0 || !request.rows[0]) {
-		await client.query(`BEGIN`);
-		await client.query(
-			`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = ${key}`
-		);
-		console.log(`Successfully binded IP`, req.ip);
-		await client.query(`COMMIT`);
-	}
-
-	if (request.rows.length > 0) {
-		const index = request.rows[0];
-
-		console.log('IP address', index);
-	}
-
-	if (!req.query.username) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: 400,
-				statusMessage: 'Missing username query',
-				data: null,
-			})
-		);
-	}
-
-	const username = req.query.username as string;
-
-	const { Roblox } = new Funcs();
-
-	client.release();
-
-	return res.json(await Roblox(username));
 });
 
 router.get('/discord/', async (req, res) => {
