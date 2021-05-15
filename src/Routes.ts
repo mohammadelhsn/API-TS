@@ -88,8 +88,20 @@ router.get(`/roblox/`, async (req, res) => {
 		`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
 	);
 
-	console.log(request.rows);
-	//console.log(typeof request.rows);
+	if (request.rows.length == 0 || !request.rows[0]) {
+		await client.query(`BEGIN`);
+		await client.query(
+			`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = ${key}`
+		);
+		console.log(`Successfully binded IP`, req.ip);
+		await client.query(`COMMIT`);
+	}
+
+	if (request.rows.length > 0) {
+		const index = request.rows[0];
+
+		console.log("IP address", index);
+	}
 
 	if (!req.query.username) {
 		return res.json(
