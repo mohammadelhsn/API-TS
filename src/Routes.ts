@@ -236,16 +236,9 @@ router.delete('/user/', (req, res) => {
 router.post(`/init/`, async (req, res) => {
 	try {
 		await client.connect();
-
-		await client.query(`BEGIN`);
-		const response = await client.query(
-			`CREATE TABLE IF NOT EXISTS user (id VARCHAR(100) NOT NULL PRIMARY KEY,apikey VARCHAR(100) NOT NULL,IP VARCHAR(100) NOT NULL);`
-		);
 		const testData = await client.query(
-			`INSERT INTO user(id, apikey, ip) VALUES($1, $2, $3) RETURNING *`,
-			[req.body.id, req.body.key, req.ip]
+			`INSERT INTO user(id, apikey, ip) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
 		);
-		await client.query(`COMMIT`);
 		console.log(testData[0]);
 
 		client.end();
