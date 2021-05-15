@@ -166,8 +166,6 @@ router.get('/user/', (req, res) => {
 });
 
 router.post('/user/', (req, res) => {
-	console.log(req.body);
-
 	if (!req.body) {
 		return new BaseObj({
 			success: false,
@@ -188,6 +186,16 @@ router.post('/user/', (req, res) => {
 	const key = req.body.key as string;
 	const ip = req.ip;
 
+	if (db.has(id)) {
+		res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'This user already exists, use `patch` instead!',
+			})
+		);
+	}
+
 	db.set(id, { key: key, ips: [ip] });
 
 	const data = {
@@ -203,13 +211,77 @@ router.post('/user/', (req, res) => {
 });
 
 router.patch('/user/', (req, res) => {
-	console.log(req.body);
-	return res.json({ status: 'WIP' });
+	if (!req.body) {
+		return new BaseObj({
+			success: false,
+			status: null,
+			statusMessage: 'Missing a required param',
+		});
+	}
+
+	if (!req.body.id || !req.body.key) {
+		return new BaseObj({
+			success: false,
+			status: null,
+			statusMessage: 'Incorrect format',
+		});
+	}
+
+	const id = req.body.id;
+	const key = req.body.key;
+
+	if (!db.has(id)) {
+		res.json(
+			new BaseObj({
+				success: false,
+				status: 404,
+				statusMessage: "This user doesn't exist",
+			})
+		);
+	}
+
+	console.log(db.get(id).key);
 });
 
 router.delete('/user/', (req, res) => {
-	console.log(req.body);
-	return res.json({ status: 'WIP' });
+	if (!req.body) {
+		return new BaseObj({
+			success: false,
+			status: null,
+			statusMessage: 'Missing a required param',
+		});
+	}
+
+	if (!req.body.id) {
+		return new BaseObj({
+			success: false,
+			status: null,
+			statusMessage: 'Incorrect format',
+		});
+	}
+
+	const id = req.body.id as string;
+
+	if (!db.has(id)) {
+		res.json(
+			new BaseObj({
+				success: false,
+				status: 404,
+				statusMessage: "This user doesn't exist",
+			})
+		);
+	}
+
+	db.delete(id);
+
+	return res.json(
+		new BaseObj({
+			success: true,
+			status: 200,
+			statusMessage: `Deleted user`,
+			data: { id: id },
+		})
+	);
 });
 
 export default router;
