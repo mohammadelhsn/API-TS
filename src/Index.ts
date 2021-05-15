@@ -25,4 +25,5 @@ app.listen(process.env.PORT || 3000, async () => {
 	console.log(`Running app on #3000`);
 	await client.connect();
 	globalThis.client = client;
+	console.log(globalThis);
 });
