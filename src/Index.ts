@@ -21,9 +21,11 @@ app.use((req, res, next) => next());
 
 app.use('/', Routes);
 
-app.listen(process.env.PORT || 3000, async () => {
+app.listen(process.env.PORT || 3000, () => {
 	console.log(`Running app on #3000`);
-	await client.connect();
+});
+
+client.connect((err, client) => {
+	if (err) console.log(err);
 	globalThis.client = client;
-	console.log(globalThis);
 });
