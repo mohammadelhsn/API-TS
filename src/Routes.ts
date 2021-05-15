@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
-import { Snowflake } from 'discord.js';
+import { Base, Snowflake } from 'discord.js';
 import { PoolClient, Pool } from 'pg';
 
 const client = new Pool({
@@ -277,6 +277,41 @@ router.delete('/user/', (req, res) => {
 router.get(`/test/`, async (req, res) => {
 	console.log(req.headers.authorization);
 	console.log(req.query?.key);
+
+	const key = req.headers.authorization || req.query?.key;
+
+	if (key == undefined) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 500,
+				statusMessage: 'Missing token through authorization or query',
+			})
+		);
+	}
+
+	const request = await client.query(
+		`SELECT * FROM ApiUser WHERE apikey = '${key}'`
+	);
+
+	if (!request.rows[0]) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'Invalid key',
+			})
+		);
+	}
+
+	const index = request.rows[0];
+
+	const data = {
+		id: index.id,
+		apikey: index.apikey,
+	};
+
+	return res.json(data);
 });
 
 export default router;
