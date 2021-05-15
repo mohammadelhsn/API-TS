@@ -137,10 +137,6 @@ router.get('/reverse/', (req, res) => {
 			);
 		}
 
-		console.log('Authorization', req.headers.authorization);
-		console.log('IP address', req.ip);
-		console.log('IPS', req.ips);
-
 		return res.json(
 			new BaseObj({
 				success: true,
@@ -154,7 +150,7 @@ router.get('/reverse/', (req, res) => {
 	}
 });
 
-router.get('/user/', (req, res) => {
+router.get('/user/', async (req, res) => {
 	if (!req.query.id) {
 		return res.json(
 			new BaseObj({
@@ -166,31 +162,79 @@ router.get('/user/', (req, res) => {
 		);
 	}
 
-	const id = req.query.id as string;
+	const request = await client.query(
+		`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
+	);
 
-	return;
+	if (request.rows.length == 0 || !request.rows[0]?.id) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 404,
+				statusMessage: "This user doesn't exist in the database",
+			})
+		);
+	}
+
+	const index = request.rows[0];
+
+	const data = {
+		id: index.id,
+		key: index.apikey,
+		ip: index.ips,
+	};
+
+	return res.json(
+		new BaseObj({
+			success: true,
+			status: 200,
+			statusMessage: 'OK',
+			data: data,
+		})
+	);
 });
 
 router.post('/user/', async (req, res) => {
-	if (!req.body) {
-		return new BaseObj({
-			success: false,
-			status: null,
-			statusMessage: 'Missing a required param',
-		});
-	}
+	try {
+		const request = await client.query(
+			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
+		);
 
-	if (!req.body.id || !req.body.key) {
-		return new BaseObj({
-			success: false,
-			status: null,
-			statusMessage: 'Incorrect format',
-		});
-	}
+		if (request.rows.length != 0 || request.rows[0]?.id) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'This user already exists in the database!',
+				})
+			);
+		}
 
-	const id = req.body.id as string;
-	const key = req.body.key as string;
-	const ip = req.ip;
+		if (!req.body?.id || !req.body?.key) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'Incorrect format',
+					data: null,
+				})
+			);
+		}
+
+		const testData = await client.query(
+			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
+		);
+
+		const data = {
+			id: testData.rows[0].id,
+			key: testData.rows[0].apikey,
+			ip: testData.rows[0].ips,
+		};
+
+		return res.json(data);
+	} catch (error) {
+		console.log(error);
+	}
 });
 
 router.patch('/user/', (req, res) => {
@@ -234,38 +278,6 @@ router.delete('/user/', (req, res) => {
 	const id = req.body.id as string;
 });
 
-router.post(`/init/`, async (req, res) => {
-	try {
-		console.log(globalThis.client);
-
-		const request = await client.query(
-			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
-		);
-
-		if (request.rows.length != 0 || request.rows[0]?.id) {
-			return res.json(
-				new BaseObj({
-					success: false,
-					status: null,
-					statusMessage: 'This user already exists in the database!',
-				})
-			);
-		}
-
-		const testData = await client.query(
-			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
-		);
-
-		const data = {
-			id: testData.rows[0].id,
-			key: testData.rows[0].apikey,
-			ip: testData.rows[0].ips,
-		};
-
-		return res.json(data);
-	} catch (error) {
-		console.log(error);
-	}
-});
+router.post(`/init/`, async (req, res) => {});
 
 export default router;
