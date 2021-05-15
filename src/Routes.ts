@@ -2,7 +2,13 @@ import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
 import { Snowflake } from 'discord.js';
-import db from 'quick.db';
+import { Pool } from 'pg';
+import { isPropertyAccessChain } from 'typescript';
+
+const client = new Pool({
+	connectionString: process.env.DATABASE_URL,
+	ssl: { rejectUnauthorized: false },
+});
 
 const router = Router();
 
@@ -161,21 +167,10 @@ router.get('/user/', (req, res) => {
 
 	const id = req.query.id as string;
 
-	if (!db.has(id)) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: 404,
-				statusMessage: "This user doesn't exist!",
-			})
-		);
-	}
-
-	const user = db.get(id);
-	return res.json({ user: user });
+	return;
 });
 
-router.post('/user/', (req, res) => {
+router.post('/user/', async (req, res) => {
 	if (!req.body) {
 		return new BaseObj({
 			success: false,
@@ -195,29 +190,6 @@ router.post('/user/', (req, res) => {
 	const id = req.body.id as string;
 	const key = req.body.key as string;
 	const ip = req.ip;
-
-	if (db.has(id)) {
-		res.json(
-			new BaseObj({
-				success: false,
-				status: null,
-				statusMessage: 'This user already exists, use `patch` instead!',
-			})
-		);
-	}
-
-	db.set(id, { key: key, ips: [ip] });
-
-	const data = {
-		success: true,
-		data: {
-			id: id,
-			key: key,
-			ip: [ip],
-		},
-	};
-
-	return res.json(data);
 });
 
 router.patch('/user/', (req, res) => {
@@ -239,18 +211,6 @@ router.patch('/user/', (req, res) => {
 
 	const id = req.body.id;
 	const key = req.body.key;
-
-	if (!db.has(id)) {
-		res.json(
-			new BaseObj({
-				success: false,
-				status: 404,
-				statusMessage: "This user doesn't exist",
-			})
-		);
-	}
-
-	console.log(db.get(id).key);
 });
 
 router.delete('/user/', (req, res) => {
@@ -271,27 +231,21 @@ router.delete('/user/', (req, res) => {
 	}
 
 	const id = req.body.id as string;
+});
 
-	if (!db.has(id)) {
-		res.json(
-			new BaseObj({
-				success: false,
-				status: 404,
-				statusMessage: "This user doesn't exist",
-			})
-		);
-	}
+router.get(`/init/`, async (req, res) => {
+	client.connect();
 
-	db.delete(id);
-
-	return res.json(
-		new BaseObj({
-			success: true,
-			status: 200,
-			statusMessage: `Deleted user`,
-			data: { id: id },
-		})
+	const response = await client.query(
+		`CREATE TABLE user (id VARCHAR(100) NOT NULL PRIMARY KEY,apikey VARCHAR(100) NOT NULL,IP VARCHAR(100) NOT NULL)`
 	);
+	const testData = await client.query(
+		`INSERT INTO user VALUES(id, apikey, ip) VALUES($1, $2, $3) RETURNING *`,
+		[req.body.id, req.body.key, req.ip]
+	);
+	console.log(testData[0]);
+
+	client.end();
 });
 
 export default router;
