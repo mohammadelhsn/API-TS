@@ -4,12 +4,10 @@ import Functions from './Functions/Functions';
 import { Base, Snowflake } from 'discord.js';
 import { PoolClient, Pool } from 'pg';
 
-const client = new Pool({
+const Client = new Pool({
 	connectionString: process.env.DATABASE_URL,
 	ssl: { rejectUnauthorized: false },
 });
-
-client.connect();
 
 const router = Router();
 
@@ -74,6 +72,8 @@ router.get('/endpoints', (req, res) => {
 router.get(`/roblox/`, async (req, res) => {
 	const key = req.headers.authorization || req.query?.key;
 
+	const client = await Client.connect();
+
 	if (key == undefined) {
 		return res.json(
 			new BaseObj({
@@ -83,10 +83,6 @@ router.get(`/roblox/`, async (req, res) => {
 			})
 		);
 	}
-
-	const request2 = await client.query(`SELECT * FROM ApiUser`);
-
-	console.log(request2.rows);
 
 	const request = await client.query(
 		`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
@@ -121,6 +117,8 @@ router.get(`/roblox/`, async (req, res) => {
 	const username = req.query.username as string;
 
 	const { Roblox } = new Funcs();
+
+	client.release();
 
 	return res.json(await Roblox(username));
 });
@@ -209,6 +207,8 @@ router.get('/reverse/', (req, res) => {
 router.get('/user/', async (req, res) => {
 	const key = req.headers.authorization || req.query?.key;
 
+	const client = await Client.connect();
+
 	if (key == undefined) {
 		return res.json(
 			new BaseObj({
@@ -279,10 +279,14 @@ router.get('/user/', async (req, res) => {
 				statusMessage: 'An unexpected error has occurred',
 			})
 		);
+	} finally {
+		client.release();
 	}
 });
 
 router.post('/user/', async (req, res) => {
+	const client = await Client.connect();
+
 	const key = req.headers.authorization || req.query?.key;
 
 	if (key == undefined) {
@@ -363,10 +367,14 @@ router.post('/user/', async (req, res) => {
 				statusMessage: 'An unexpected error has occurred',
 			})
 		);
+	} finally {
+		client.release();
 	}
 });
 
 router.patch('/user/', async (req, res) => {
+	const client = await Client.connect();
+
 	const key = req.headers.authorization || req.query?.key;
 
 	if (key == undefined) {
@@ -442,10 +450,14 @@ router.patch('/user/', async (req, res) => {
 				data: null,
 			})
 		);
+	} finally {
+		client.release();
 	}
 });
 
 router.delete('/user/', async (req, res) => {
+	const client = await Client.connect();
+
 	const key = req.headers.authorization || req.query?.key;
 
 	if (key == undefined) {
@@ -509,6 +521,8 @@ router.delete('/user/', async (req, res) => {
 			statusMessage: 'An unexpected error has occurred',
 			data: null,
 		});
+	} finally {
+		client.release();
 	}
 });
 
