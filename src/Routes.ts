@@ -88,8 +88,8 @@ router.get(`/roblox/`, async (req, res) => {
 		`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
 	);
 
-	console.log(request.rows[0]);
-	console.log(typeof request.rows[0]);
+	console.log(request.rows);
+	//console.log(typeof request.rows);
 
 	if (!req.query.username) {
 		return res.json(

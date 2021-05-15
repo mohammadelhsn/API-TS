@@ -47,7 +47,7 @@ namespace Functions {
 						isBanned: info.isBanned,
 						username: info.username,
 						pastNames: info.oldNames,
-						bioL: info.blurb,
+						bio: info.blurb,
 						join_date: FormatNumber(info.age),
 						friends: info.friendCount,
 						following: FormatNumber(info.followingCount),
