@@ -147,50 +147,103 @@ router.get('/reverse/', (req, res) => {
 });
 
 router.get('/user/', async (req, res) => {
-	if (!req.query.id) {
+	const key = req.headers.authorization || req.query?.key;
+
+	if (key == undefined) {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: 400,
-				statusMessage: 'Missing id query',
-				data: null,
+				status: 500,
+				statusMessage: 'Missing token through authorization or query',
 			})
 		);
 	}
 
-	const request = await client.query(
-		`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
-	);
-
-	if (request.rows.length == 0 || !request.rows[0]?.id) {
+	if (key != process.env.OWNER_KEY) {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: 404,
-				statusMessage: "This user doesn't exist in the database",
+				status: null,
+				statusMessage: 'This is an owner only route',
 			})
 		);
 	}
+	try {
+		if (!req.query.id) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing id query',
+					data: null,
+				})
+			);
+		}
 
-	const index = request.rows[0];
+		const request = await client.query(
+			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
+		);
 
-	const data = {
-		id: index.id,
-		key: index.apikey,
-		ip: index.ips,
-	};
+		if (request.rows.length == 0 || !request.rows[0]?.id) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 404,
+					statusMessage: "This user doesn't exist in the database",
+				})
+			);
+		}
 
-	return res.json(
-		new BaseObj({
-			success: true,
-			status: 200,
-			statusMessage: 'OK',
-			data: data,
-		})
-	);
+		const index = request.rows[0];
+
+		const data = {
+			id: index.id,
+			key: index.apikey,
+		};
+
+		return res.json(
+			new BaseObj({
+				success: true,
+				status: 200,
+				statusMessage: 'OK',
+				data: data,
+			})
+		);
+	} catch (error) {
+		console.log(error);
+
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'An unexpected error has occurred',
+			})
+		);
+	}
 });
 
 router.post('/user/', async (req, res) => {
+	const key = req.headers.authorization || req.query?.key;
+
+	if (key == undefined) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 500,
+				statusMessage: 'Missing token through authorization or query',
+			})
+		);
+	}
+
+	if (key != process.env.OWNER_KEY) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'This is an owner only route',
+			})
+		);
+	}
 	try {
 		const request = await client.query(
 			`SELECT * FROM ApiUser WHERE id = '${req.body.id}'`
@@ -220,7 +273,7 @@ router.post('/user/', async (req, res) => {
 		await client.query(`BEGIN`);
 
 		const testData = await client.query(
-			`INSERT INTO ApiUser(id, apikey, ips) VALUES('${req.body.id}', '${req.body.key}', '${req.ip}') RETURNING *`
+			`INSERT INTO ApiUser(id, apikey) VALUES('${req.body.id}', '${req.body.key}') RETURNING *`
 		);
 
 		await client.query(`COMMIT`);
@@ -228,54 +281,156 @@ router.post('/user/', async (req, res) => {
 		const data = {
 			id: testData.rows[0].id,
 			key: testData.rows[0].apikey,
-			ip: testData.rows[0].ips,
 		};
 
 		return res.json(data);
 	} catch (error) {
 		console.log(error);
+
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'An unexpected error has occurred',
+			})
+		);
 	}
 });
 
-router.patch('/user/', (req, res) => {
-	if (!req.body) {
-		return new BaseObj({
-			success: false,
-			status: null,
-			statusMessage: 'Missing a required param',
-		});
+router.patch('/user/', async (req, res) => {
+	const key = req.headers.authorization || req.query?.key;
+
+	if (key == undefined) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 500,
+				statusMessage: 'Missing token through authorization or query',
+			})
+		);
 	}
 
-	if (!req.body.id || !req.body.key) {
-		return new BaseObj({
-			success: false,
-			status: null,
-			statusMessage: 'Incorrect format',
-		});
+	if (key != process.env.OWNER_KEY) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'This is an owner only route',
+			})
+		);
 	}
+	try {
+		if (!req.body) {
+			return new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'Missing a required param',
+			});
+		}
 
-	const id = req.body.id;
-	const key = req.body.key;
+		if (!req.body.id || !req.body.key) {
+			return new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'Incorrect format',
+			});
+		}
+
+		const id = req.body.id;
+		const key = req.body.key;
+
+		await client.query(`BEGIN`);
+
+		const request = await client.query(
+			`INSERT INTO ApiUser(id, apikey) VALUES('${id}', '${key}') RETURNING *`
+		);
+
+		await client.query(`COMMIT`);
+
+		const index = request.rows[0];
+
+		const data = {
+			id: index.id,
+			key: index.key,
+		};
+
+		return res.json(data);
+	} catch (error) {
+		console.log(error);
+
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'An unexpected error has occurred',
+			})
+		);
+	}
 });
 
-router.delete('/user/', (req, res) => {
-	if (!req.body) {
+router.delete('/user/', async (req, res) => {
+	const key = req.headers.authorization || req.query?.key;
+
+	if (key == undefined) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 500,
+				statusMessage: 'Missing token through authorization or query',
+			})
+		);
+	}
+
+	if (key != process.env.OWNER_KEY) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'This is an owner only route',
+			})
+		);
+	}
+	try {
+		if (!req.body) {
+			return new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'Missing a required param',
+			});
+		}
+
+		if (!req.body.id) {
+			return new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'Incorrect format',
+			});
+		}
+
+		const id = req.body.id as string;
+
+		await client.query(`BEGIN`);
+
+		await client.query(`DELETE FROM ApiUser WHERE id = '${id}'`);
+
+		await client.query(`COMMIT`);
+
+		return res.json(
+			new BaseObj({
+				success: true,
+				status: 200,
+				statusMessage: 'OK',
+			})
+		);
+	} catch (error) {
+		console.log(error);
+
 		return new BaseObj({
 			success: false,
 			status: null,
-			statusMessage: 'Missing a required param',
+			statusMessage: 'An unexpected error has occurred',
 		});
 	}
-
-	if (!req.body.id) {
-		return new BaseObj({
-			success: false,
-			status: null,
-			statusMessage: 'Incorrect format',
-		});
-	}
-
-	const id = req.body.id as string;
 });
 
 router.get(`/test/`, async (req, res) => {
