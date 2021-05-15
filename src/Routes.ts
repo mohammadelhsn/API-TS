@@ -233,7 +233,7 @@ router.delete('/user/', (req, res) => {
 	const id = req.body.id as string;
 });
 
-router.get(`/init/`, async (req, res) => {
+router.post(`/init/`, async (req, res) => {
 	client.connect();
 
 	const response = await client.query(
