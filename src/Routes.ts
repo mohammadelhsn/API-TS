@@ -136,6 +136,11 @@ router.get(`/roblox/`, async (req, res) => {
 		const result = await client.query(
 			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
 		);
+
+		if (result.rows.length == 0) {
+			return client.release();
+		}
+
 		let times = parseInt(result.rows[0].timesused);
 		times++;
 
@@ -228,6 +233,11 @@ router.get('/discord/', async (req, res) => {
 		const result = await client.query(
 			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
 		);
+
+		if (result.rows.length == 0) {
+			return client.release();
+		}
+
 		let times = parseInt(result.rows[0].timesused);
 		times++;
 
@@ -319,6 +329,11 @@ router.get('/subreddit/', async (req, res) => {
 		const result = await client.query(
 			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
 		);
+
+		if (result.rows.length == 0) {
+			return client.release();
+		}
+
 		let times = parseInt(result.rows[0].timesused);
 		times++;
 
@@ -413,6 +428,11 @@ router.get('/reddit/', async (req, res) => {
 		const result = await client.query(
 			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
 		);
+
+		if (result.rows.length == 0) {
+			return client.release();
+		}
+
 		let times = parseInt(result.rows[0].timesused);
 		times++;
 
@@ -513,6 +533,11 @@ router.get('/reverse/', async (req, res) => {
 		const result = await client.query(
 			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
 		);
+
+		if (result.rows.length == 0) {
+			return client.release();
+		}
+
 		let times = parseInt(result.rows[0].timesused);
 		times++;
 
