@@ -48,7 +48,7 @@ namespace Functions {
 						username: info.username,
 						pastNames: info.oldNames,
 						bio: info.blurb,
-						join_date: FormatNumber(info.age),
+						joinDate: FormatNumber(info.age),
 						friends: info.friendCount,
 						following: FormatNumber(info.followingCount),
 						followers: FormatNumber(info.followerCount),
