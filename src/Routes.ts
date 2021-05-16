@@ -70,9 +70,8 @@ router.get('/endpoints', (req, res) => {
 
 router.get(`/roblox/`, async (req, res) => {
 	const client = await Client.connect();
+	const key = req.headers.authorization || req.query?.key;
 	try {
-		const key = req.headers.authorization || req.query?.key;
-
 		if (key == undefined) {
 			return res.json(
 				new BaseObj({
@@ -146,6 +145,19 @@ router.get(`/roblox/`, async (req, res) => {
 			})
 		);
 	} finally {
+		const result = await client.query(
+			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
+		);
+		let times = parseInt(result.rows[0].timesused);
+
+		await client.query(`BEGIN`);
+		await client.query(
+			`UDPATE timesUsed SET timesused = '${times++}' WHERE apikey = '${key}'`
+		);
+		await client.query(`COMMIT`);
+
+		console.log(times);
+
 		client.release();
 	}
 });
