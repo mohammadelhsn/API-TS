@@ -58,7 +58,7 @@ router.get(`/roblox/`, async (req, res) => {
 	const key = req.headers.authorization || req.query?.key;
 	try {
 		if (key == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
@@ -73,7 +73,7 @@ router.get(`/roblox/`, async (req, res) => {
 		);
 
 		if (request.rows.length == 0) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
@@ -95,7 +95,7 @@ router.get(`/roblox/`, async (req, res) => {
 		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
 
 		if (req.ip != ip) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
@@ -107,7 +107,7 @@ router.get(`/roblox/`, async (req, res) => {
 		}
 
 		if (!req.query.username) {
-			return res.json(
+			return res.status(400).json(
 				new BaseObj({
 					success: false,
 					status: 400,
@@ -125,7 +125,7 @@ router.get(`/roblox/`, async (req, res) => {
 	} catch (error) {
 		console.log(error);
 
-		return res.json(
+		return res.status(500).json(
 			new BaseObj({
 				success: false,
 				status: 500,
@@ -158,11 +158,12 @@ router.get(`/roblox/`, async (req, res) => {
 const apiLimiter = rateLimit({
 	max: 50,
 	handler: function (req, res) {
-		return res.json(
+		return res.status(429).json(
 			new BaseObj({
 				success: false,
 				status: 429,
 				statusMessage: 'Too many requests, slow down!',
+				data: null,
 			})
 		);
 	},
@@ -173,11 +174,12 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 	const key = req.headers.authorization || req.query?.key;
 	try {
 		if (key == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
 					statusMessage: 'You must provide an API key',
+					data: null,
 				})
 			);
 		}
@@ -187,11 +189,12 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 		);
 
 		if (request.rows.length == 0) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
 					statusMessage: 'Invalid API key',
+					data: null,
 				})
 			);
 		}
@@ -207,12 +210,13 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
 
 		if (ip != request.rows[0].ips) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
 					statusMessage:
 						'Invalid IP address. API key must be used at original IP address',
+					data: null,
 				})
 			);
 		}
@@ -222,7 +226,7 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 				new BaseObj({
 					success: false,
 					status: 400,
-					statusMessage: 'Missing username query',
+					statusMessage: 'Missing id query',
 					data: null,
 				})
 			);
@@ -236,11 +240,12 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 	} catch (error) {
 		console.log(error);
 
-		return res.json(
+		return res.status(500).json(
 			new BaseObj({
 				success: false,
 				status: 500,
 				statusMessage: 'An unexpected error has occurred',
+				data: null,
 			})
 		);
 	} finally {
@@ -270,7 +275,7 @@ router.get('/subreddit/', async (req, res) => {
 	const key = req.headers.authorization || req.query?.key;
 	try {
 		if (key == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
@@ -285,11 +290,12 @@ router.get('/subreddit/', async (req, res) => {
 		);
 
 		if (request.rows.length == 0) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
 					statusMessage: 'Invalid API key provided',
+					data: null,
 				})
 			);
 		}
@@ -305,17 +311,18 @@ router.get('/subreddit/', async (req, res) => {
 		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
 
 		if (ip != req.ip) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
 					statusMessage: 'Invalid IP address.',
+					data: null,
 				})
 			);
 		}
 
 		if (!req.query.subreddit) {
-			return res.json(
+			return res.status(400).json(
 				new BaseObj({
 					success: false,
 					status: 400,
@@ -332,11 +339,12 @@ router.get('/subreddit/', async (req, res) => {
 	} catch (error) {
 		console.log(error);
 
-		return res.json(
+		return res.status(500).json(
 			new BaseObj({
 				success: false,
 				status: 500,
 				statusMessage: 'An unexpected error has occured',
+				data: null,
 			})
 		);
 	} finally {
@@ -367,11 +375,12 @@ router.get('/reddit/', async (req, res) => {
 
 	try {
 		if (key == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
 					statusMessage: 'You must include an API key',
+					data: null,
 				})
 			);
 		}
@@ -381,11 +390,12 @@ router.get('/reddit/', async (req, res) => {
 		);
 
 		if (request.rows.length == 0) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
 					statusMessage: 'Invalid API key',
+					data: null,
 				})
 			);
 		}
@@ -401,7 +411,7 @@ router.get('/reddit/', async (req, res) => {
 		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
 
 		if (ip != request.rows[0].ips) {
-			return res.json(
+			return res.status(400).json(
 				new BaseObj({
 					success: false,
 					status: 403,
@@ -413,7 +423,7 @@ router.get('/reddit/', async (req, res) => {
 		}
 
 		if (!req.query.user) {
-			return res.json(
+			return res.status(400).json(
 				new BaseObj({
 					success: false,
 					status: 400,
@@ -430,7 +440,7 @@ router.get('/reddit/', async (req, res) => {
 	} catch (error) {
 		console.log(error);
 
-		return res.json(
+		return res.status(500).json(
 			new BaseObj({
 				success: false,
 				status: 500,
@@ -466,7 +476,7 @@ router.get('/reverse/', async (req, res) => {
 
 	try {
 		if (key == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
@@ -481,7 +491,7 @@ router.get('/reverse/', async (req, res) => {
 		);
 
 		if (request.rows.length == 0) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
@@ -502,7 +512,7 @@ router.get('/reverse/', async (req, res) => {
 		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
 
 		if (ip != request.rows[0].ips) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
@@ -514,7 +524,7 @@ router.get('/reverse/', async (req, res) => {
 		}
 
 		if (!req.query.text) {
-			return res.json(
+			return res.status(400).json(
 				new BaseObj({
 					success: false,
 					status: 400,
@@ -535,7 +545,7 @@ router.get('/reverse/', async (req, res) => {
 	} catch (error) {
 		console.log(error);
 
-		return res.json(
+		return res.status(500).json(
 			new BaseObj({
 				success: false,
 				status: 500,
@@ -570,7 +580,7 @@ router.get('/user/', async (req, res) => {
 	const client = await Client.connect();
 	try {
 		if (key == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
@@ -581,7 +591,7 @@ router.get('/user/', async (req, res) => {
 		}
 
 		if (key != process.env.OWNER_KEY) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
@@ -591,7 +601,7 @@ router.get('/user/', async (req, res) => {
 			);
 		}
 		if (!req.query.id) {
-			return res.json(
+			return res.status(400).json(
 				new BaseObj({
 					success: false,
 					status: 400,
@@ -606,7 +616,7 @@ router.get('/user/', async (req, res) => {
 		);
 
 		if (request.rows.length == 0 || !request.rows[0]?.id) {
-			return res.json(
+			return res.status(404).json(
 				new BaseObj({
 					success: false,
 					status: 404,
@@ -634,7 +644,7 @@ router.get('/user/', async (req, res) => {
 	} catch (error) {
 		console.log(error);
 
-		return res.json(
+		return res.status(500).json(
 			new BaseObj({
 				success: false,
 				status: 500,
@@ -653,7 +663,7 @@ router.post('/user/', async (req, res) => {
 
 	try {
 		if (key == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
@@ -664,7 +674,7 @@ router.post('/user/', async (req, res) => {
 		}
 
 		if (key != process.env.OWNER_KEY) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
@@ -681,7 +691,7 @@ router.post('/user/', async (req, res) => {
 		);
 
 		if (request.rows.length != 0 || request.rows[0]?.id) {
-			return res.json(
+			return res.status(409).json(
 				new BaseObj({
 					success: false,
 					status: 409,
@@ -692,7 +702,7 @@ router.post('/user/', async (req, res) => {
 		}
 
 		if (!id || !req.body?.key) {
-			return res.json(
+			return res.status(400).json(
 				new BaseObj({
 					success: false,
 					status: 400,
@@ -703,16 +713,14 @@ router.post('/user/', async (req, res) => {
 		}
 
 		await client.query(`BEGIN`);
-
-		const testData = await client.query(
+		const user = await client.query(
 			`INSERT INTO ApiUser(id, apikey) VALUES('${id}', '${req.body.key}') RETURNING *`
 		);
-
 		await client.query(`COMMIT`);
 
 		const data = {
-			id: testData.rows[0].id,
-			key: testData.rows[0].apikey,
+			id: user.rows[0].id,
+			key: user.rows[0].apikey,
 		};
 
 		return res.json(
@@ -726,7 +734,7 @@ router.post('/user/', async (req, res) => {
 	} catch (error) {
 		console.log(error);
 
-		return res.json(
+		return res.status(500).json(
 			new BaseObj({
 				success: false,
 				status: 500,
@@ -745,7 +753,7 @@ router.patch('/user/', async (req, res) => {
 
 	try {
 		if (apikey == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
@@ -756,7 +764,7 @@ router.patch('/user/', async (req, res) => {
 		}
 
 		if (apikey != process.env.OWNER_KEY) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
@@ -766,21 +774,25 @@ router.patch('/user/', async (req, res) => {
 			);
 		}
 		if (!req.body) {
-			return new BaseObj({
-				success: false,
-				status: 400,
-				statusMessage: 'Missing a required param',
-				data: null,
-			});
+			return res.status(400).json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing a required param',
+					data: null,
+				})
+			);
 		}
 
 		if (!req.query.id || !req.body.key) {
-			return new BaseObj({
-				success: false,
-				status: 409,
-				statusMessage: 'Incorrect format',
-				data: null,
-			});
+			return res.status(409).json(
+				new BaseObj({
+					success: false,
+					status: 409,
+					statusMessage: 'Incorrect format',
+					data: null,
+				})
+			);
 		}
 
 		const id = req.query.id;
@@ -829,7 +841,7 @@ router.delete('/user/', async (req, res) => {
 
 	try {
 		if (key == undefined) {
-			return res.json(
+			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
@@ -840,7 +852,7 @@ router.delete('/user/', async (req, res) => {
 		}
 
 		if (key != process.env.OWNER_KEY) {
-			return res.json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
@@ -851,21 +863,25 @@ router.delete('/user/', async (req, res) => {
 		}
 
 		if (!req.body) {
-			return new BaseObj({
-				success: false,
-				status: 400,
-				statusMessage: 'Missing a required param',
-				data: null,
-			});
+			return res.status(400).json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing a required param',
+					data: null,
+				})
+			);
 		}
 
 		if (!req.query.id) {
-			return new BaseObj({
-				success: false,
-				status: 400,
-				statusMessage: 'Incorrect format',
-				data: null,
-			});
+			return res.status(400).json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Incorrect format',
+					data: null,
+				})
+			);
 		}
 
 		const id = req.query.id as string;
@@ -885,12 +901,14 @@ router.delete('/user/', async (req, res) => {
 	} catch (error) {
 		console.log(error);
 
-		return new BaseObj({
-			success: false,
-			status: 500,
-			statusMessage: 'An unexpected error has occurred',
-			data: null,
-		});
+		return res.status(500).json(
+			new BaseObj({
+				status: 500,
+				statusMessage: 'An unexpected error has occurred',
+				success: false,
+				data: null,
+			})
+		);
 	} finally {
 		client.release();
 	}
