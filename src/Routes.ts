@@ -90,8 +90,9 @@ router.get(`/roblox/`, async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 401,
 					statusMessage: 'Provided key is invalid',
+					data: null,
 				})
 			);
 		}
@@ -111,7 +112,7 @@ router.get(`/roblox/`, async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage:
 						'Invalid IP address. Token is bound to the first IP address you used',
 				})
@@ -140,8 +141,9 @@ router.get(`/roblox/`, async (req, res) => {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: null,
+				status: 500,
 				statusMessage: 'An unexpected error has occurred',
+				data: null,
 			})
 		);
 	} finally {
@@ -169,8 +171,8 @@ router.get('/discord/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
-					statusMessage: 'You must include a API key of some sort',
+					status: 401,
+					statusMessage: 'You must provide an API key',
 				})
 			);
 		}
@@ -183,7 +185,7 @@ router.get('/discord/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'Invalid API key',
 				})
 			);
@@ -203,7 +205,7 @@ router.get('/discord/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage:
 						'Invalid IP address. API key must be used at original IP address',
 				})
@@ -232,7 +234,7 @@ router.get('/discord/', async (req, res) => {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: null,
+				status: 500,
 				statusMessage: 'An unexpected error has occurred',
 			})
 		);
@@ -261,8 +263,9 @@ router.get('/subreddit/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 401,
 					statusMessage: 'You must provide a key',
+					data: null,
 				})
 			);
 		}
@@ -275,7 +278,7 @@ router.get('/subreddit/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'Invalid API key provided',
 				})
 			);
@@ -295,7 +298,7 @@ router.get('/subreddit/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'Invalid IP address.',
 				})
 			);
@@ -322,7 +325,7 @@ router.get('/subreddit/', async (req, res) => {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: null,
+				status: 500,
 				statusMessage: 'An unexpected error has occured',
 			})
 		);
@@ -352,8 +355,8 @@ router.get('/reddit/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
-					statusMessage: 'You must include a API key of some sort',
+					status: 401,
+					statusMessage: 'You must include an API key',
 				})
 			);
 		}
@@ -366,7 +369,7 @@ router.get('/reddit/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'Invalid API key',
 				})
 			);
@@ -386,9 +389,10 @@ router.get('/reddit/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage:
 						'Invalid IP address. API key must be used at original IP address',
+					data: null,
 				})
 			);
 		}
@@ -414,8 +418,9 @@ router.get('/reddit/', async (req, res) => {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: null,
+				status: 500,
 				statusMessage: 'An unexpected error has occured',
+				data: null,
 			})
 		);
 	} finally {
@@ -444,8 +449,9 @@ router.get('/reverse/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
-					statusMessage: 'You must include a API key of some sort',
+					status: 401,
+					statusMessage: 'You must include an API key',
+					data: null,
 				})
 			);
 		}
@@ -458,8 +464,9 @@ router.get('/reverse/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'Invalid API key',
+					data: null,
 				})
 			);
 		}
@@ -478,9 +485,10 @@ router.get('/reverse/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage:
 						'Invalid IP address. API key must be used at original IP address',
+					data: null,
 				})
 			);
 		}
@@ -510,8 +518,9 @@ router.get('/reverse/', async (req, res) => {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: null,
+				status: 500,
 				statusMessage: 'An unexpected error has occurred',
+				data: null,
 			})
 		);
 	} finally {
@@ -549,8 +558,9 @@ router.get('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'This is an owner only route',
+					data: null,
 				})
 			);
 		}
@@ -600,8 +610,9 @@ router.get('/user/', async (req, res) => {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: null,
+				status: 500,
 				statusMessage: 'An unexpected error has occurred',
+				data: null,
 			})
 		);
 	} finally {
@@ -628,8 +639,9 @@ router.post('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'This is an owner only route',
+					data: null,
 				})
 			);
 		}
@@ -644,8 +656,9 @@ router.post('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 409,
 					statusMessage: 'This user already exists in the database!',
+					data: null,
 				})
 			);
 		}
@@ -654,7 +667,7 @@ router.post('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 400,
 					statusMessage: 'Incorrect format',
 					data: null,
 				})
@@ -688,8 +701,9 @@ router.post('/user/', async (req, res) => {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: null,
+				status: 500,
 				statusMessage: 'An unexpected error has occurred',
+				data: null,
 			})
 		);
 	} finally {
@@ -716,26 +730,27 @@ router.patch('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'This is an owner only route',
+					data: null,
 				})
 			);
 		}
 		if (!req.body) {
 			return new BaseObj({
 				success: false,
-				status: null,
+				status: 400,
 				statusMessage: 'Missing a required param',
-				data: null
+				data: null,
 			});
 		}
 
 		if (!req.query.id || !req.body.key) {
 			return new BaseObj({
 				success: false,
-				status: null,
+				status: 409,
 				statusMessage: 'Incorrect format',
-				data: null
+				data: null,
 			});
 		}
 
@@ -769,7 +784,7 @@ router.patch('/user/', async (req, res) => {
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: null,
+				status: 500,
 				statusMessage: 'An unexpected error has occurred',
 				data: null,
 			})
@@ -798,8 +813,9 @@ router.delete('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: null,
+					status: 403,
 					statusMessage: 'This is an owner only route',
+					data: null,
 				})
 			);
 		}
@@ -807,16 +823,18 @@ router.delete('/user/', async (req, res) => {
 		if (!req.body) {
 			return new BaseObj({
 				success: false,
-				status: null,
+				status: 400,
 				statusMessage: 'Missing a required param',
+				data: null,
 			});
 		}
 
 		if (!req.query.id) {
 			return new BaseObj({
 				success: false,
-				status: null,
+				status: 400,
 				statusMessage: 'Incorrect format',
+				data: null,
 			});
 		}
 
@@ -839,7 +857,7 @@ router.delete('/user/', async (req, res) => {
 
 		return new BaseObj({
 			success: false,
-			status: null,
+			status: 500,
 			statusMessage: 'An unexpected error has occurred',
 			data: null,
 		});
