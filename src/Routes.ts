@@ -149,14 +149,13 @@ router.get(`/roblox/`, async (req, res) => {
 			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
 		);
 		let times = parseInt(result.rows[0].timesused);
-		const newValue = times++;
+		times++;
 
-		console.log("Times", times);
-		console.log("New value", newValue);
+		console.log('Times', times);
 
 		await client.query(`BEGIN`);
 		await client.query(
-			`UPDATE ApiUser SET timesused = '${newValue}' WHERE apikey = '${key}'`
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
 		);
 		await client.query(`COMMIT`);
 
