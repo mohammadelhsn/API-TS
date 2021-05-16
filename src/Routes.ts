@@ -152,7 +152,7 @@ router.get(`/roblox/`, async (req, res) => {
 
 		await client.query(`BEGIN`);
 		await client.query(
-			`UPDATE timesUsed SET timesused = '${times++}' WHERE apikey = '${key}'`
+			`UPDATE ApiUser SET timesused = '${times++}' WHERE apikey = '${key}'`
 		);
 		await client.query(`COMMIT`);
 
