@@ -2,6 +2,7 @@ import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
 import { Pool } from 'pg';
+import rateLimit from 'express-rate-limit';
 
 const Client = new Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -154,7 +155,9 @@ router.get(`/roblox/`, async (req, res) => {
 	}
 });
 
-router.get('/discord/', async (req, res) => {
+const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 1 });
+
+router.get('/discord/', apiLimiter, async (req, res) => {
 	const client = await Client.connect();
 	const key = req.headers.authorization || req.query?.key;
 	try {
