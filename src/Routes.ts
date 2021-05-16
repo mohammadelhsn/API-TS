@@ -151,8 +151,6 @@ router.get(`/roblox/`, async (req, res) => {
 		let times = parseInt(result.rows[0].timesused);
 		times++;
 
-		console.log('Times', times);
-
 		await client.query(`BEGIN`);
 		await client.query(
 			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
@@ -165,9 +163,8 @@ router.get(`/roblox/`, async (req, res) => {
 
 router.get('/discord/', async (req, res) => {
 	const client = await Client.connect();
+	const key = req.headers.authorization || req.query?.key;
 	try {
-		const key = req.headers.authorization || req.query?.key;
-
 		if (key == undefined) {
 			return res.json(
 				new BaseObj({
@@ -240,15 +237,26 @@ router.get('/discord/', async (req, res) => {
 			})
 		);
 	} finally {
+		const result = await client.query(
+			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
+		);
+		let times = parseInt(result.rows[0].timesused);
+		times++;
+
+		await client.query(`BEGIN`);
+		await client.query(
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
+		);
+		await client.query(`COMMIT`);
+
 		client.release();
 	}
 });
 
 router.get('/subreddit/', async (req, res) => {
 	const client = await Client.connect();
+	const key = req.headers.authorization || req.query?.key;
 	try {
-		const key = req.headers.authorization || req.query?.key;
-
 		if (key == undefined) {
 			return res.json(
 				new BaseObj({
@@ -319,30 +327,164 @@ router.get('/subreddit/', async (req, res) => {
 			})
 		);
 	} finally {
+		const result = await client.query(
+			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
+		);
+		let times = parseInt(result.rows[0].timesused);
+		times++;
+
+		await client.query(`BEGIN`);
+		await client.query(
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
+		);
+		await client.query(`COMMIT`);
+
 		client.release();
 	}
 });
 
 router.get('/reddit/', async (req, res) => {
-	if (!req.query.user) {
+	const client = await Client.connect();
+	const key = req.headers.authorization || req.query?.key;
+
+	try {
+		if (key == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'You must include a API key of some sort',
+				})
+			);
+		}
+
+		const request = await client.query(
+			`SELECT ips from ApiUser WHERE apikey = '${key}'`
+		);
+
+		if (request.rows.length == 0) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'Invalid API key',
+				})
+			);
+		}
+
+		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			await client.query(`BEGIN`);
+			await client.query(
+				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}`
+			);
+			await client.query(`COMMIT`);
+		}
+
+		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+
+		if (ip != request.rows[0].ips) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage:
+						'Invalid IP address. API key must be used at original IP address',
+				})
+			);
+		}
+
+		if (!req.query.user) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing user query',
+					data: null,
+				})
+			);
+		}
+
+		const user = req.query.user as string;
+
+		const { User } = new Funcs();
+		return res.json(await User(user));
+	} catch (error) {
+		console.log(error);
+
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: 400,
-				statusMessage: 'Missing user query',
-				data: null,
+				status: null,
+				statusMessage: 'An unexpected error has occured',
 			})
 		);
+	} finally {
+		const result = await client.query(
+			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
+		);
+		let times = parseInt(result.rows[0].timesused);
+		times++;
+
+		await client.query(`BEGIN`);
+		await client.query(
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
+		);
+		await client.query(`COMMIT`);
+
+		client.release();
 	}
-
-	const user = req.query.user as string;
-
-	const { User } = new Funcs();
-	return res.json(await User(user));
 });
 
-router.get('/reverse/', (req, res) => {
+router.get('/reverse/', async (req, res) => {
+	const client = await Client.connect();
+	const key = req.headers.authorization || req.query?.key;
+
 	try {
+		if (key == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'You must include a API key of some sort',
+				})
+			);
+		}
+
+		const request = await client.query(
+			`SELECT ips from ApiUser WHERE apikey = '${key}'`
+		);
+
+		if (request.rows.length == 0) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'Invalid API key',
+				})
+			);
+		}
+
+		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			await client.query(`BEGIN`);
+			await client.query(
+				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}`
+			);
+			await client.query(`COMMIT`);
+		}
+
+		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+
+		if (ip != request.rows[0].ips) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage:
+						'Invalid IP address. API key must be used at original IP address',
+				})
+			);
+		}
+
 		if (!req.query.text) {
 			return res.json(
 				new BaseObj({
@@ -364,34 +506,54 @@ router.get('/reverse/', (req, res) => {
 		);
 	} catch (error) {
 		console.log(error);
+
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: null,
+				statusMessage: 'An unexpected error has occurred',
+			})
+		);
+	} finally {
+		const result = await client.query(
+			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
+		);
+		let times = parseInt(result.rows[0].timesused);
+		times++;
+
+		await client.query(`BEGIN`);
+		await client.query(
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
+		);
+		await client.query(`COMMIT`);
+
+		client.release();
 	}
 });
 
 router.get('/user/', async (req, res) => {
 	const key = req.headers.authorization || req.query?.key;
-
 	const client = await Client.connect();
-
-	if (key == undefined) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: 500,
-				statusMessage: 'Missing token through authorization or query',
-			})
-		);
-	}
-
-	if (key != process.env.OWNER_KEY) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: null,
-				statusMessage: 'This is an owner only route',
-			})
-		);
-	}
 	try {
+		if (key == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 500,
+					statusMessage: 'Missing token through authorization or query',
+				})
+			);
+		}
+
+		if (key != process.env.OWNER_KEY) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'This is an owner only route',
+				})
+			);
+		}
 		if (!req.query.id) {
 			return res.json(
 				new BaseObj({
@@ -449,29 +611,29 @@ router.get('/user/', async (req, res) => {
 
 router.post('/user/', async (req, res) => {
 	const client = await Client.connect();
-
 	const key = req.headers.authorization || req.query?.key;
 
-	if (key == undefined) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: 500,
-				statusMessage: 'Missing token through authorization or query',
-			})
-		);
-	}
-
-	if (key != process.env.OWNER_KEY) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: null,
-				statusMessage: 'This is an owner only route',
-			})
-		);
-	}
 	try {
+		if (key == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 500,
+					statusMessage: 'Missing token through authorization or query',
+				})
+			);
+		}
+
+		if (key != process.env.OWNER_KEY) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'This is an owner only route',
+				})
+			);
+		}
+
 		const id = req.body.id;
 
 		const request = await client.query(
@@ -537,34 +699,34 @@ router.post('/user/', async (req, res) => {
 
 router.patch('/user/', async (req, res) => {
 	const client = await Client.connect();
+	const apikey = req.headers.authorization || req.query?.key;
 
-	const key = req.headers.authorization || req.query?.key;
-
-	if (key == undefined) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: 500,
-				statusMessage: 'Missing token through authorization or query',
-			})
-		);
-	}
-
-	if (key != process.env.OWNER_KEY) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: null,
-				statusMessage: 'This is an owner only route',
-			})
-		);
-	}
 	try {
+		if (apikey == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 500,
+					statusMessage: 'Missing token through authorization or query',
+				})
+			);
+		}
+
+		if (apikey != process.env.OWNER_KEY) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'This is an owner only route',
+				})
+			);
+		}
 		if (!req.body) {
 			return new BaseObj({
 				success: false,
 				status: null,
 				statusMessage: 'Missing a required param',
+				data: null
 			});
 		}
 
@@ -573,6 +735,7 @@ router.patch('/user/', async (req, res) => {
 				success: false,
 				status: null,
 				statusMessage: 'Incorrect format',
+				data: null
 			});
 		}
 
@@ -580,11 +743,9 @@ router.patch('/user/', async (req, res) => {
 		const key = req.body.key;
 
 		await client.query(`BEGIN`);
-
 		const request = await client.query(
 			`UPDATE ApiUser SET apikey = '${key}' WHERE id = '${id}' RETURNING *`
 		);
-
 		await client.query(`COMMIT`);
 
 		const index = request.rows[0];
@@ -620,29 +781,29 @@ router.patch('/user/', async (req, res) => {
 
 router.delete('/user/', async (req, res) => {
 	const client = await Client.connect();
-
 	const key = req.headers.authorization || req.query?.key;
 
-	if (key == undefined) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: 500,
-				statusMessage: 'Missing token through authorization or query',
-			})
-		);
-	}
-
-	if (key != process.env.OWNER_KEY) {
-		return res.json(
-			new BaseObj({
-				success: false,
-				status: null,
-				statusMessage: 'This is an owner only route',
-			})
-		);
-	}
 	try {
+		if (key == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 500,
+					statusMessage: 'Missing token through authorization or query',
+				})
+			);
+		}
+
+		if (key != process.env.OWNER_KEY) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'This is an owner only route',
+				})
+			);
+		}
+
 		if (!req.body) {
 			return new BaseObj({
 				success: false,
@@ -662,9 +823,7 @@ router.delete('/user/', async (req, res) => {
 		const id = req.query.id as string;
 
 		await client.query(`BEGIN`);
-
 		await client.query(`DELETE FROM ApiUser WHERE id = '${id}'`);
-
 		await client.query(`COMMIT`);
 
 		return res.json(
