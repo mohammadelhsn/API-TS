@@ -914,4 +914,80 @@ router.delete('/user/', async (req, res) => {
 	}
 });
 
+router.get(`/keys/`, async (req, res) => {
+	const client = await Client.connect();
+	const key = req.headers.authorization || req.query?.key;
+
+	if (key == undefined) {
+		return res.status(401).json(
+			new BaseObj({
+				success: false,
+				status: 401,
+				statusMessage: 'Missing token through authorization or query',
+				data: null,
+			})
+		);
+	}
+
+	if (key != process.env.OWNER_KEY) {
+		return res.status(403).json(
+			new BaseObj({
+				success: false,
+				status: 403,
+				statusMessage: 'This is an owner only route',
+				data: null,
+			})
+		);
+	}
+
+	if (!req.query.key) {
+		return res.status(400).json(
+			new BaseObj({
+				success: false,
+				status: 400,
+				statusMessage: 'Incorrect format',
+				data: null,
+			})
+		);
+	}
+
+	try {
+		const request = await client.query(
+			`SELECT apikey from ApiUser WHERE key = '${key}'`
+		);
+
+		if (request.rows.length == 0) {
+			return res.json(
+				new BaseObj({
+					success: true,
+					status: 200,
+					statusMessage: 'OK',
+					data: null,
+				})
+			);
+		}
+
+		return res.json(
+			new BaseObj({
+				success: true,
+				status: 200,
+				statusMessage: 'OK',
+				data: { apikey: request.rows[0].apikey },
+			})
+		);
+	} catch (error) {
+		console.log(error);
+
+		return res.status(500).json(
+			new BaseObj({
+				success: false,
+				status: 500,
+				statusMessage: 'An unexpected error has occurred',
+			})
+		);
+	} finally {
+		client.release();
+	}
+});
+
 export default router;
