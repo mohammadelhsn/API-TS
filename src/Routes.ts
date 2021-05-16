@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
 import Functions from './Functions/Functions';
-import { Base, Snowflake } from 'discord.js';
-import { PoolClient, Pool } from 'pg';
+import { Pool } from 'pg';
 
 const Client = new Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -11,7 +10,7 @@ const Client = new Pool({
 
 const router = Router();
 
-const { Utils, Funcs } = Functions;
+const { Funcs } = Functions;
 
 router.use((req, res, next) => {
 	next();
@@ -152,40 +151,163 @@ router.get(`/roblox/`, async (req, res) => {
 });
 
 router.get('/discord/', async (req, res) => {
-	if (!req.query.id) {
+	const client = await Client.connect();
+	try {
+		const key = req.headers.authorization || req.query?.key;
+
+		if (key == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'You must include a API key of some sort',
+				})
+			);
+		}
+
+		const request = await client.query(
+			`SELECT ips from ApiUser WHERE key = '${key}'`
+		);
+
+		if (request.rows.length == 0) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'Invalid API key',
+				})
+			);
+		}
+
+		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			await client.query(`BEGIN`);
+			await client.query(
+				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}`
+			);
+			await client.query(`COMMIT`);
+		}
+
+		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+
+		if (ip != request.rows[0].ips) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage:
+						'Invalid IP address. API key must be used at original IP address',
+				})
+			);
+		}
+
+		if (!req.query.id) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing username query',
+					data: null,
+				})
+			);
+		}
+
+		const id = req.query.id as string;
+
+		const { Discord } = new Funcs();
+
+		return res.json(await Discord(id));
+	} catch (error) {
+		console.log(error);
+
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: 400,
-				statusMessage: 'Missing username query',
-				data: null,
+				status: null,
+				statusMessage: 'An unexpected error has occurred',
 			})
 		);
+	} finally {
+		client.release();
 	}
-
-	const id = req.query.id as string;
-
-	const { Discord } = new Funcs();
-
-	return res.json(await Discord(id));
 });
 
 router.get('/subreddit/', async (req, res) => {
-	if (!req.query.subreddit) {
+	const client = await Client.connect();
+	try {
+		const key = req.headers.authorization || req.query?.key;
+
+		if (key == undefined) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'You must provide a key',
+				})
+			);
+		}
+
+		const request = await client.query(
+			`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
+		);
+
+		if (request.rows.length == 0) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'Invalid API key provided',
+				})
+			);
+		}
+
+		if (request.rows[0].ips == null) {
+			await client.query(`BEGIN`);
+			await client.query(
+				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}'`
+			);
+			await client.query(`COMMIT`);
+		}
+
+		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+
+		if (ip != req.ip) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: null,
+					statusMessage: 'Invalid IP address.',
+				})
+			);
+		}
+
+		if (!req.query.subreddit) {
+			return res.json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing subreddit query',
+					data: null,
+				})
+			);
+		}
+
+		const subreddit = req.query.subreddit as string;
+
+		const { Subreddit } = new Funcs();
+		return res.json(await Subreddit(subreddit));
+	} catch (error) {
+		console.log(error);
+
 		return res.json(
 			new BaseObj({
 				success: false,
-				status: 400,
-				statusMessage: 'Missing subreddit query',
-				data: null,
+				status: null,
+				statusMessage: 'An unexpected error has occured',
 			})
 		);
+	} finally {
+		client.release();
 	}
-
-	const subreddit = req.query.subreddit as string;
-
-	const { Subreddit } = new Funcs();
-	return res.json(await Subreddit(subreddit));
 });
 
 router.get('/reddit/', async (req, res) => {
