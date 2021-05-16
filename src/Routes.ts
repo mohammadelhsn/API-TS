@@ -953,7 +953,7 @@ router.get(`/keys/`, async (req, res) => {
 
 	try {
 		const request = await client.query(
-			`SELECT apikey from ApiUser WHERE apikey = '${key}'`
+			`SELECT apikey from ApiUser WHERE apikey = '${req.query.key}'`
 		);
 
 		if (request.rows.length == 0) {
@@ -983,6 +983,7 @@ router.get(`/keys/`, async (req, res) => {
 				success: false,
 				status: 500,
 				statusMessage: 'An unexpected error has occurred',
+				data: null,
 			})
 		);
 	} finally {
