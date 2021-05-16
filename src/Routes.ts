@@ -953,7 +953,7 @@ router.get(`/keys/`, async (req, res) => {
 
 	try {
 		const request = await client.query(
-			`SELECT apikey from ApiUser WHERE key = '${key}'`
+			`SELECT apikey from ApiUser WHERE apikey = '${key}'`
 		);
 
 		if (request.rows.length == 0) {
