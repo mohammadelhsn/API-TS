@@ -155,7 +155,18 @@ router.get(`/roblox/`, async (req, res) => {
 	}
 });
 
-const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 1 });
+const apiLimiter = rateLimit({
+	max: 50,
+	handler: function (req, res) {
+		return res.json(
+			new BaseObj({
+				success: false,
+				status: 429,
+				statusMessage: 'Too many requests, slow down!',
+			})
+		);
+	},
+});
 
 router.get('/discord/', apiLimiter, async (req, res) => {
 	const client = await Client.connect();
@@ -207,7 +218,7 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 		}
 
 		if (!req.query.id) {
-			return res.json(
+			return res.status(400).json(
 				new BaseObj({
 					success: false,
 					status: 400,
