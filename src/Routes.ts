@@ -151,8 +151,8 @@ router.get(`/roblox/`, async (req, res) => {
 		let times = parseInt(result.rows[0].timesused);
 		const newValue = times++;
 
-		console.log(times);
-		console.log(newValue);
+		console.log("Times", times);
+		console.log("New value", newValue);
 
 		await client.query(`BEGIN`);
 		await client.query(
