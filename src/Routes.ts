@@ -166,7 +166,7 @@ router.get('/discord/', async (req, res) => {
 		}
 
 		const request = await client.query(
-			`SELECT ips from ApiUser WHERE key = '${key}'`
+			`SELECT ips from ApiUser WHERE apikey = '${key}'`
 		);
 
 		if (request.rows.length == 0) {
