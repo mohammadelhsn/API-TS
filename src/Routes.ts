@@ -916,7 +916,7 @@ router.delete('/user/', async (req, res) => {
 
 router.get(`/keys/`, async (req, res) => {
 	const client = await Client.connect();
-	const key = req.headers.authorization || req.query?.key;
+	const key = req.headers.authorization;
 
 	if (key == undefined) {
 		return res.status(401).json(
