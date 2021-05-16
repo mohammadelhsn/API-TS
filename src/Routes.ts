@@ -32,38 +32,22 @@ router.get('/endpoints', (req, res) => {
 		{
 			path: '/reddit',
 			methods: ['GET'],
-			params: [
-				{ name: 'user', type: 'string', description: 'Reddit username' },
-			],
-			status: 'Working',
 		},
 		{
 			path: '/subreddit',
 			methods: ['GET'],
-			params: [
-				{ name: 'subreddit', type: 'string', description: 'Subreddit name' },
-			],
-			status: 'Working',
 		},
 		{
 			path: '/roblox',
 			methods: ['GET'],
-			params: [
-				{ name: 'username', type: 'string', description: 'The users username' },
-			],
-			status: 'Working',
 		},
 		{
 			path: '/discord',
 			methods: ['GET'],
-			params: [{ name: 'ID', type: 'string', description: 'The users ID' }],
-			status: 'Working',
 		},
 		{
 			path: '/user',
 			methods: ['GET', 'PATCH', 'PUT', 'DELETE'],
-			params: null,
-			status: 'Working',
 		},
 	]);
 });
@@ -76,8 +60,9 @@ router.get(`/roblox/`, async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: 500,
+					status: 401,
 					statusMessage: 'Missing token through authorization or query',
+					data: null,
 				})
 			);
 		}
@@ -115,6 +100,7 @@ router.get(`/roblox/`, async (req, res) => {
 					status: 403,
 					statusMessage:
 						'Invalid IP address. Token is bound to the first IP address you used',
+					data: null,
 				})
 			);
 		}
@@ -548,8 +534,9 @@ router.get('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: 500,
+					status: 401,
 					statusMessage: 'Missing token through authorization or query',
+					data: null,
 				})
 			);
 		}
@@ -585,6 +572,7 @@ router.get('/user/', async (req, res) => {
 					success: false,
 					status: 404,
 					statusMessage: "This user doesn't exist in the database",
+					data: null,
 				})
 			);
 		}
@@ -629,8 +617,9 @@ router.post('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: 500,
+					status: 401,
 					statusMessage: 'Missing token through authorization or query',
+					data: null,
 				})
 			);
 		}
@@ -720,8 +709,9 @@ router.patch('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: 500,
+					status: 401,
 					statusMessage: 'Missing token through authorization or query',
+					data: null,
 				})
 			);
 		}
@@ -803,8 +793,9 @@ router.delete('/user/', async (req, res) => {
 			return res.json(
 				new BaseObj({
 					success: false,
-					status: 500,
+					status: 401,
 					statusMessage: 'Missing token through authorization or query',
+					data: null,
 				})
 			);
 		}
