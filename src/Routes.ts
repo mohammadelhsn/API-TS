@@ -156,7 +156,7 @@ router.get(`/roblox/`, async (req, res) => {
 });
 
 const apiLimiter = rateLimit({
-	max: 50,
+	max: 1,
 	handler: function (req, res) {
 		return res.status(429).json(
 			new BaseObj({
