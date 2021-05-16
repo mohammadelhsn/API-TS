@@ -31,6 +31,7 @@ namespace Functions {
 					const info = await Roblox.getPlayerInfo(id);
 					if (info.isBanned == true) {
 						const data = {
+							isBanned: info.isBanned,
 							username: info.username,
 							thumbnail: `https://www.roblox.com/bust-thumbnail/image?userId=${id}&width=420&height=420&format=png`,
 							bio: info.blurb ? info.blurb : 'N/A',
