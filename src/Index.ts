@@ -1,7 +1,6 @@
 import express from 'express';
 import Routes from './Routes';
 import * as dotenv from 'dotenv';
-import { Pool } from 'pg';
 
 dotenv.config();
 
