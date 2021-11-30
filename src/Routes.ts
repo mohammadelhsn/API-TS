@@ -94,7 +94,7 @@ router.get(`/roblox/`, async (req, res) => {
 
 		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
 
-		if (req.ip != ip) {
+		if (request.rows[0].ips != ip) {
 			return res.status(403).json(
 				new BaseObj({
 					success: false,
@@ -310,7 +310,7 @@ router.get('/subreddit/', async (req, res) => {
 
 		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
 
-		if (request.rows[0].ips != req.ip) {
+		if (request.rows[0].ips != ip) {
 			return res.status(403).json(
 				new BaseObj({
 					success: false,
