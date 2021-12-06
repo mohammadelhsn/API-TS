@@ -518,13 +518,9 @@ router.get('/reverse/', async (req, res) => {
 
 		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
 
-		const verifier = new Verifier(key as string, ip);
+		const verifier = new Verifier(key as string, ip, false);
 
 		const isEqual = verifier.CheckIP(req.ip);
-
-		console.log(ip);
-		console.log(verifier.ip);
-		console.log(verifier.HideIP(req.ip));
 
 		if (!isEqual) {
 			return res.status(403).json(

@@ -303,11 +303,14 @@ namespace Functions {
 		secret = process.env.SECRET_KEY;
 		key: string;
 		ip: string;
-		constructor(key: string, ip: string) {
+		constructor(key: string, ip: string, convert = false) {
 			this.key = key;
 			this.ip = ip;
-			this.HideKey();
-			this.HideIP();
+
+			if (convert == true) {
+				this.HideKey();
+				this.HideIP();
+			}
 		}
 		HideKey(key?: string) {
 			if (key)
