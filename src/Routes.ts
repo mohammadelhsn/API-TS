@@ -489,7 +489,7 @@ router.get('/reverse/', async (req, res) => {
 			);
 		}
 
-		const hmac = new Utils().ConvertKey(key as string)
+		const hmac = new Utils().ConvertKey(key as string);
 
 		const request = await client.query(
 			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
@@ -522,6 +522,9 @@ router.get('/reverse/', async (req, res) => {
 
 		const isEqual = verifier.CheckIP(req.ip);
 
+		console.log(verifier.ip);
+		console.log(verifier.HideIP(req.ip))
+		
 		if (!isEqual) {
 			return res.status(403).json(
 				new BaseObj({
