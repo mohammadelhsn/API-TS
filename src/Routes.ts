@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
-import Functions from './Functions/Functions';
+import Functions, { Utils, Verifier } from './Functions/Functions';
 import { Pool } from 'pg';
 import rateLimit from 'express-rate-limit';
+import { createHmac } from 'crypto';
 
 const Client = new Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -56,6 +57,7 @@ router.get('/endpoints', (req, res) => {
 router.get(`/roblox/`, async (req, res) => {
 	const client = await Client.connect();
 	const key = req.headers.authorization || req.query?.key;
+
 	try {
 		if (key == undefined) {
 			return res.status(401).json(
@@ -472,6 +474,7 @@ router.get('/reddit/', async (req, res) => {
 
 router.get('/reverse/', async (req, res) => {
 	const client = await Client.connect();
+
 	const key = req.headers.authorization || req.query?.key;
 
 	try {
@@ -486,8 +489,10 @@ router.get('/reverse/', async (req, res) => {
 			);
 		}
 
+		const hmac = new Utils().ConvertKey(key as string)
+
 		const request = await client.query(
-			`SELECT ips from ApiUser WHERE apikey = '${key}'`
+			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
 		);
 
 		if (request.rows.length == 0) {
@@ -495,23 +500,29 @@ router.get('/reverse/', async (req, res) => {
 				new BaseObj({
 					success: false,
 					status: 403,
-					statusMessage: 'Invalid API key',
+					statusMessage: "I couldn't find this key in my database!",
 					data: null,
 				})
 			);
 		}
 
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			const iphmac = new Utils().ConvertIP(req.ip);
+
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
 			);
 			await client.query(`COMMIT`);
 		}
 
-		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
 
-		if (ip != request.rows[0].ips) {
+		const verifier = new Verifier(key as string, ip);
+
+		const isEqual = verifier.CheckIP(req.ip);
+
+		if (!isEqual) {
 			return res.status(403).json(
 				new BaseObj({
 					success: false,
@@ -534,7 +545,7 @@ router.get('/reverse/', async (req, res) => {
 			);
 		}
 
-		return res.json(
+		return res.status(200).json(
 			new BaseObj({
 				success: true,
 				status: 200,
@@ -554,24 +565,24 @@ router.get('/reverse/', async (req, res) => {
 			})
 		);
 	} finally {
+		const newKey = new Utils().ConvertKey(key as string);
+
 		const result = await client.query(
-			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
+			`SELECT timesused FROM ApiUser WHERE apikey = '${newKey}'`
 		);
 
-		if (result.rows.length == 0) {
-			return client.release();
-		}
+		if (result.rows.length == 0) return client.release();
 
 		let times = parseInt(result.rows[0].timesused);
 		times++;
 
 		await client.query(`BEGIN`);
 		await client.query(
-			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${newKey}'`
 		);
 		await client.query(`COMMIT`);
 
-		client.release();
+		return client.release();
 	}
 });
 

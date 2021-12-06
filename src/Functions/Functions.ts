@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 import BaseObj from '../Structures/BaseObj';
 import Funcs from '../Interfaces/Funcs';
 import moment from 'moment';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const client = new Client();
 
 namespace Functions {
 	export class Utils {
+		protected secret = process.env.SECRET;
 		FormatNumber(x: string | number) {
 			if (typeof x !== 'number') parseInt(x);
 			return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -19,6 +21,18 @@ namespace Functions {
 		Capitalize(string: string) {
 			return string.charAt(0).toUpperCase() + string.slice(1);
 		}
+		ConvertKey = (key: string) =>
+			crypto
+				.createHmac('sha256', this.secret)
+				.update(key)
+				.digest()
+				.toString('hex');
+		ConvertIP = (ip: string) =>
+			crypto
+				.createHmac('sha256', this.secret)
+				.update(ip)
+				.digest()
+				.toString('hex');
 	}
 	export class Funcs {
 		async Roblox(user: string) {
@@ -284,6 +298,55 @@ namespace Functions {
 		reverse(s) {
 			return [...s].reverse().join('');
 		}
+	}
+	export class Verifier {
+		secret = process.env.SECRET_KEY;
+		key: string;
+		ip: string;
+		constructor(key: string, ip: string) {
+			this.key = key;
+			this.ip = ip;
+			this.HideKey();
+			this.HideIP();
+		}
+		HideKey(key?: string) {
+			if (key)
+				return crypto
+					.createHmac('sha256', this.secret)
+					.update(key)
+					.digest()
+					.toString('hex');
+
+			this.key = crypto
+				.createHmac('sha256', this.secret)
+				.update(this.key)
+				.digest()
+				.toString('hex');
+
+			return this;
+		}
+		HideIP(ip?: string) {
+			if (ip)
+				return crypto
+					.createHmac('sha256', this.secret)
+					.update(ip)
+					.digest()
+					.toString('hex');
+
+			this.ip = crypto
+				.createHmac('sha256', this.secret)
+				.update(this.ip)
+				.digest()
+				.toString('hex');
+
+			return this;
+		}
+		CheckKey = (compare: string, convert = true) =>
+			convert == false
+				? compare == this.key
+				: this.key == this.HideKey(compare);
+		CheckIP = (compare: string, convert = true) =>
+			convert == false ? compare == this.ip : this.ip == this.HideIP(compare);
 	}
 }
 
