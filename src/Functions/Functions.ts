@@ -13,7 +13,7 @@ const client = new Client();
 
 namespace Functions {
 	export class Utils {
-		protected secret = process.env.SECRET;
+		protected secret = process.env.SECRET_KEY;
 		FormatNumber(x: string | number) {
 			if (typeof x !== 'number') parseInt(x);
 			return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
