@@ -522,9 +522,10 @@ router.get('/reverse/', async (req, res) => {
 
 		const isEqual = verifier.CheckIP(req.ip);
 
+		console.log(ip);
 		console.log(verifier.ip);
-		console.log(verifier.HideIP(req.ip))
-		
+		console.log(verifier.HideIP(req.ip));
+
 		if (!isEqual) {
 			return res.status(403).json(
 				new BaseObj({
