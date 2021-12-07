@@ -434,7 +434,7 @@ router.get('/reddit/', async (req, res) => {
 
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}'`
 			);
 			await client.query(`COMMIT`);
 		}
@@ -758,7 +758,9 @@ router.post('/user/', async (req, res) => {
 
 		await client.query(`BEGIN`);
 		const user = await client.query(
-			`INSERT INTO ApiUser(id, apikey) VALUES('${id}', '${new Utils().ConvertKey(req.body.key as string)}') RETURNING *`
+			`INSERT INTO ApiUser(id, apikey) VALUES('${id}', '${new Utils().ConvertKey(
+				req.body.key as string
+			)}') RETURNING *`
 		);
 		await client.query(`COMMIT`);
 
