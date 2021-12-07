@@ -435,7 +435,7 @@ router.get('/reddit/', async (req, res) => {
 			);
 		}
 
-		let ip = request.rows[0].ips;
+		let ip = new Utils().ConvertIP(request.rows[0].ips);
 
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
 			const iphmac = new Utils().ConvertIP(req.ip);
@@ -446,7 +446,7 @@ router.get('/reddit/', async (req, res) => {
 			);
 			await client.query(`COMMIT`);
 
-			ip = req.ip;
+			ip = iphmac;
 		}
 
 		const verifier = new Verifier(key as string, ip, false);
