@@ -758,7 +758,7 @@ router.post('/user/', async (req, res) => {
 
 		await client.query(`BEGIN`);
 		const user = await client.query(
-			`INSERT INTO ApiUser(id, apikey) VALUES('${id}', '${req.body.key}') RETURNING *`
+			`INSERT INTO ApiUser(id, apikey) VALUES('${id}', '${new Utils().ConvertKey(req.body.key as string)}') RETURNING *`
 		);
 		await client.query(`COMMIT`);
 
@@ -840,7 +840,7 @@ router.patch('/user/', async (req, res) => {
 		}
 
 		const id = req.query.id;
-		const key = req.body.key;
+		const key = new Utils().ConvertKey(req.body.key as string);
 
 		await client.query(`BEGIN`);
 		const request = await client.query(
