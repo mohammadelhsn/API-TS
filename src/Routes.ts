@@ -435,6 +435,8 @@ router.get('/reddit/', async (req, res) => {
 			);
 		}
 
+		let ip = request.rows[0].ips;
+
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
 			const iphmac = new Utils().ConvertIP(req.ip);
 
@@ -443,14 +445,11 @@ router.get('/reddit/', async (req, res) => {
 				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${hmac}'`
 			);
 			await client.query(`COMMIT`);
+
+			ip = req.ip;
 		}
 
-		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
-
 		const verifier = new Verifier(key as string, ip, false);
-
-		console.log(req.ip);
-		console.log(verifier.ip);
 
 		const isEqual = verifier.CheckIP(req.ip);
 
