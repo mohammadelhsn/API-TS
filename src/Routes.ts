@@ -435,7 +435,11 @@ router.get('/reddit/', async (req, res) => {
 			);
 		}
 
-		let ip = new Utils().ConvertIP(request.rows[0].ips);
+		let ip: string;
+
+		if ((request.rows.length > 0) && (request.rows[0].ips != null)) {
+			ip = new Utils().ConvertIP(request.rows[0].ips);
+		}
 
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
 			const iphmac = new Utils().ConvertIP(req.ip);
