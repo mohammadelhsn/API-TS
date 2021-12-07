@@ -91,7 +91,7 @@ router.get(`/roblox/`, async (req, res) => {
 
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${hmac}'`
 			);
 			await client.query(`COMMIT`);
 		}
@@ -142,8 +142,10 @@ router.get(`/roblox/`, async (req, res) => {
 			})
 		);
 	} finally {
+		const hmac = new Utils().ConvertKey(key as string);
+
 		const result = await client.query(
-			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
+			`SELECT timesused FROM ApiUser WHERE apikey = '${hmac}'`
 		);
 
 		if (result.rows.length == 0) {
@@ -155,7 +157,7 @@ router.get(`/roblox/`, async (req, res) => {
 
 		await client.query(`BEGIN`);
 		await client.query(
-			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${hmac}'`
 		);
 		await client.query(`COMMIT`);
 
@@ -178,225 +180,6 @@ const apiLimiter = rateLimit({
 });
 
 router.get('/discord/', apiLimiter, async (req, res) => {
-	const client = await Client.connect();
-	const key = req.headers.authorization || req.query?.key;
-
-	try {
-		if (key == undefined) {
-			return res.status(401).json(
-				new BaseObj({
-					success: false,
-					status: 401,
-					statusMessage: 'You must include an API key',
-					data: null,
-				})
-			);
-		}
-
-		const hmac = new Utils().ConvertKey(key as string);
-
-		const request = await client.query(
-			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
-		);
-
-		if (request.rows.length == 0) {
-			return res.status(403).json(
-				new BaseObj({
-					success: false,
-					status: 403,
-					statusMessage: "I couldn't find this key in my database!",
-					data: null,
-				})
-			);
-		}
-
-		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
-			const iphmac = new Utils().ConvertIP(req.ip);
-
-			await client.query(`BEGIN`);
-			await client.query(
-				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
-			);
-			await client.query(`COMMIT`);
-		}
-
-		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
-
-		const verifier = new Verifier(key as string, ip, false);
-
-		const isEqual = verifier.CheckIP(req.ip);
-
-		if (!isEqual) {
-			return res.status(403).json(
-				new BaseObj({
-					success: false,
-					status: 403,
-					statusMessage:
-						'Invalid IP address. API key must be used at original IP address',
-					data: null,
-				})
-			);
-		}
-
-		if (!req.query.id) {
-			return res.status(400).json(
-				new BaseObj({
-					success: false,
-					status: 400,
-					statusMessage: 'Missing id query',
-					data: null,
-				})
-			);
-		}
-
-		const id = req.query.id as string;
-
-		const { Discord } = new Funcs();
-
-		return res.json(await Discord(id));
-	} catch (error) {
-		console.log(error);
-
-		return res.status(500).json(
-			new BaseObj({
-				success: false,
-				status: 500,
-				statusMessage: 'An unexpected error has occurred',
-				data: null,
-			})
-		);
-	} finally {
-		const result = await client.query(
-			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
-		);
-
-		if (result.rows.length == 0) {
-			return client.release();
-		}
-
-		let times = parseInt(result.rows[0].timesused);
-		times++;
-
-		await client.query(`BEGIN`);
-		await client.query(
-			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
-		);
-		await client.query(`COMMIT`);
-
-		client.release();
-	}
-});
-
-router.get('/subreddit/', async (req, res) => {
-	const client = await Client.connect();
-	const key = req.headers.authorization || req.query?.key;
-
-	try {
-		if (key == undefined) {
-			return res.status(401).json(
-				new BaseObj({
-					success: false,
-					status: 401,
-					statusMessage: 'You must include an API key',
-					data: null,
-				})
-			);
-		}
-
-		const hmac = new Utils().ConvertKey(key as string);
-
-		const request = await client.query(
-			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
-		);
-
-		if (request.rows.length == 0) {
-			return res.status(403).json(
-				new BaseObj({
-					success: false,
-					status: 403,
-					statusMessage: "I couldn't find this key in my database!",
-					data: null,
-				})
-			);
-		}
-
-		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
-			const iphmac = new Utils().ConvertIP(req.ip);
-
-			await client.query(`BEGIN`);
-			await client.query(
-				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
-			);
-			await client.query(`COMMIT`);
-		}
-
-		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
-
-		const verifier = new Verifier(key as string, ip, false);
-
-		const isEqual = verifier.CheckIP(req.ip);
-
-		if (!isEqual) {
-			return res.status(403).json(
-				new BaseObj({
-					success: false,
-					status: 403,
-					statusMessage:
-						'Invalid IP address. API key must be used at original IP address',
-					data: null,
-				})
-			);
-		}
-
-		if (!req.query.subreddit) {
-			return res.status(400).json(
-				new BaseObj({
-					success: false,
-					status: 400,
-					statusMessage: 'Missing subreddit query',
-					data: null,
-				})
-			);
-		}
-
-		const subreddit = req.query.subreddit as string;
-
-		const { Subreddit } = new Funcs();
-		return res.json(await Subreddit(subreddit));
-	} catch (error) {
-		console.log(error);
-
-		return res.status(500).json(
-			new BaseObj({
-				success: false,
-				status: 500,
-				statusMessage: 'An unexpected error has occured',
-				data: null,
-			})
-		);
-	} finally {
-		const result = await client.query(
-			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
-		);
-
-		if (result.rows.length == 0) {
-			return client.release();
-		}
-
-		let times = parseInt(result.rows[0].timesused);
-		times++;
-
-		await client.query(`BEGIN`);
-		await client.query(
-			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
-		);
-		await client.query(`COMMIT`);
-
-		client.release();
-	}
-});
-
-router.get('/reddit/', async (req, res) => {
 	const client = await Client.connect();
 	const key = req.headers.authorization || req.query?.key;
 
@@ -457,6 +240,229 @@ router.get('/reddit/', async (req, res) => {
 			);
 		}
 
+		if (!req.query.id) {
+			return res.status(400).json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing id query',
+					data: null,
+				})
+			);
+		}
+
+		const id = req.query.id as string;
+
+		const { Discord } = new Funcs();
+
+		return res.json(await Discord(id));
+	} catch (error) {
+		console.log(error);
+
+		return res.status(500).json(
+			new BaseObj({
+				success: false,
+				status: 500,
+				statusMessage: 'An unexpected error has occurred',
+				data: null,
+			})
+		);
+	} finally {
+		const hmac = new Utils().ConvertKey(key as string);
+
+		const result = await client.query(
+			`SELECT timesused FROM ApiUser WHERE apikey = '${hmac}'`
+		);
+
+		if (result.rows.length == 0) {
+			return client.release();
+		}
+
+		let times = parseInt(result.rows[0].timesused);
+		times++;
+
+		await client.query(`BEGIN`);
+		await client.query(
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${hmac}'`
+		);
+		await client.query(`COMMIT`);
+
+		client.release();
+	}
+});
+
+router.get('/subreddit/', async (req, res) => {
+	const client = await Client.connect();
+	const key = req.headers.authorization || req.query?.key;
+
+	try {
+		if (key == undefined) {
+			return res.status(401).json(
+				new BaseObj({
+					success: false,
+					status: 401,
+					statusMessage: 'You must include an API key',
+					data: null,
+				})
+			);
+		}
+
+		const hmac = new Utils().ConvertKey(key as string);
+
+		const request = await client.query(
+			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
+		);
+
+		if (request.rows.length == 0) {
+			return res.status(403).json(
+				new BaseObj({
+					success: false,
+					status: 403,
+					statusMessage: "I couldn't find this key in my database!",
+					data: null,
+				})
+			);
+		}
+
+		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			const iphmac = new Utils().ConvertIP(req.ip);
+
+			await client.query(`BEGIN`);
+			await client.query(
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${hmac}'`
+			);
+			await client.query(`COMMIT`);
+		}
+
+		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
+
+		const verifier = new Verifier(key as string, ip, false);
+
+		const isEqual = verifier.CheckIP(req.ip);
+
+		if (!isEqual) {
+			return res.status(403).json(
+				new BaseObj({
+					success: false,
+					status: 403,
+					statusMessage:
+						'Invalid IP address. API key must be used at original IP address',
+					data: null,
+				})
+			);
+		}
+
+		if (!req.query.subreddit) {
+			return res.status(400).json(
+				new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Missing subreddit query',
+					data: null,
+				})
+			);
+		}
+
+		const subreddit = req.query.subreddit as string;
+
+		const { Subreddit } = new Funcs();
+		return res.json(await Subreddit(subreddit));
+	} catch (error) {
+		console.log(error);
+
+		return res.status(500).json(
+			new BaseObj({
+				success: false,
+				status: 500,
+				statusMessage: 'An unexpected error has occured',
+				data: null,
+			})
+		);
+	} finally {
+		const hmac = new Utils().ConvertKey(key as string);
+
+		const result = await client.query(
+			`SELECT timesused FROM ApiUser WHERE apikey = '${hmac}'`
+		);
+
+		if (result.rows.length == 0) {
+			return client.release();
+		}
+
+		let times = parseInt(result.rows[0].timesused);
+		times++;
+
+		await client.query(`BEGIN`);
+		await client.query(
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${hmac}'`
+		);
+		await client.query(`COMMIT`);
+
+		client.release();
+	}
+});
+
+router.get('/reddit/', async (req, res) => {
+	const client = await Client.connect();
+	const key = req.headers.authorization || req.query?.key;
+
+	try {
+		if (key == undefined) {
+			return res.status(401).json(
+				new BaseObj({
+					success: false,
+					status: 401,
+					statusMessage: 'You must include an API key',
+					data: null,
+				})
+			);
+		}
+
+		const hmac = new Utils().ConvertKey(key as string);
+
+		const request = await client.query(
+			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
+		);
+
+		if (request.rows.length == 0) {
+			return res.status(403).json(
+				new BaseObj({
+					success: false,
+					status: 403,
+					statusMessage: "I couldn't find this key in my database!",
+					data: null,
+				})
+			);
+		}
+
+		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			const iphmac = new Utils().ConvertIP(req.ip);
+
+			await client.query(`BEGIN`);
+			await client.query(
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${hmac}'`
+			);
+			await client.query(`COMMIT`);
+		}
+
+		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
+
+		const verifier = new Verifier(key as string, ip, false);
+
+		const isEqual = verifier.CheckIP(req.ip);
+
+		if (!isEqual) {
+			return res.status(403).json(
+				new BaseObj({
+					success: false,
+					status: 403,
+					statusMessage:
+						'Invalid IP address. API key must be used at original IP address',
+					data: null,
+				})
+			);
+		}
+
 		if (!req.query.user) {
 			return res.status(400).json(
 				new BaseObj({
@@ -484,8 +490,10 @@ router.get('/reddit/', async (req, res) => {
 			})
 		);
 	} finally {
+		const hmac = new Utils().ConvertKey(key as string);
+
 		const result = await client.query(
-			`SELECT timesused FROM ApiUser WHERE apikey = '${key}'`
+			`SELECT timesused FROM ApiUser WHERE apikey = '${hmac}'`
 		);
 
 		if (result.rows.length == 0) {
@@ -497,7 +505,7 @@ router.get('/reddit/', async (req, res) => {
 
 		await client.query(`BEGIN`);
 		await client.query(
-			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${key}'`
+			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${hmac}'`
 		);
 		await client.query(`COMMIT`);
 
@@ -544,7 +552,7 @@ router.get('/reverse/', async (req, res) => {
 
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${hmac}'`
 			);
 			await client.query(`COMMIT`);
 		}
