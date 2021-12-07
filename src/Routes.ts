@@ -217,7 +217,7 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}'`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${hmac}'`
 			);
 			await client.query(`COMMIT`);
 		}
@@ -448,6 +448,9 @@ router.get('/reddit/', async (req, res) => {
 		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
 
 		const verifier = new Verifier(key as string, ip, false);
+
+		console.log(req.ip);
+		console.log(verifier.ip);
 
 		const isEqual = verifier.CheckIP(req.ip);
 
