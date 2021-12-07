@@ -3,7 +3,6 @@ import BaseObj from './Structures/BaseObj';
 import Functions, { Utils, Verifier } from './Functions/Functions';
 import { Pool } from 'pg';
 import rateLimit from 'express-rate-limit';
-import { createHmac } from 'crypto';
 
 const Client = new Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -64,45 +63,52 @@ router.get(`/roblox/`, async (req, res) => {
 				new BaseObj({
 					success: false,
 					status: 401,
-					statusMessage: 'Missing token through authorization or query',
+					statusMessage: 'You must include an API key',
 					data: null,
 				})
 			);
 		}
 
+		const hmac = new Utils().ConvertKey(key as string);
+
 		const request = await client.query(
-			`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
+			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
 		);
 
 		if (request.rows.length == 0) {
-			return res.status(401).json(
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
-					status: 401,
-					statusMessage: 'Provided key is invalid',
+					status: 403,
+					statusMessage: "I couldn't find this key in my database!",
 					data: null,
 				})
 			);
 		}
 
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			const iphmac = new Utils().ConvertIP(req.ip);
+
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}'`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
 			);
-			console.log(`Successfully binded IP`);
 			await client.query(`COMMIT`);
 		}
 
-		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
 
-		if (request.rows[0].ips != ip) {
+		const verifier = new Verifier(key as string, ip, false);
+
+		const isEqual = verifier.CheckIP(req.ip);
+
+		if (!isEqual) {
 			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
 					statusMessage:
-						'Invalid IP address. Token is bound to the first IP address you used',
+						'Invalid IP address. API key must be used at original IP address',
 					data: null,
 				})
 			);
@@ -174,20 +180,23 @@ const apiLimiter = rateLimit({
 router.get('/discord/', apiLimiter, async (req, res) => {
 	const client = await Client.connect();
 	const key = req.headers.authorization || req.query?.key;
+
 	try {
 		if (key == undefined) {
 			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
-					statusMessage: 'You must provide an API key',
+					statusMessage: 'You must include an API key',
 					data: null,
 				})
 			);
 		}
 
+		const hmac = new Utils().ConvertKey(key as string);
+
 		const request = await client.query(
-			`SELECT ips from ApiUser WHERE apikey = '${key}'`
+			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
 		);
 
 		if (request.rows.length == 0) {
@@ -195,23 +204,29 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 				new BaseObj({
 					success: false,
 					status: 403,
-					statusMessage: 'Invalid API key',
+					statusMessage: "I couldn't find this key in my database!",
 					data: null,
 				})
 			);
 		}
 
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			const iphmac = new Utils().ConvertIP(req.ip);
+
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
 			);
 			await client.query(`COMMIT`);
 		}
 
-		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
 
-		if (ip != request.rows[0].ips) {
+		const verifier = new Verifier(key as string, ip, false);
+
+		const isEqual = verifier.CheckIP(req.ip);
+
+		if (!isEqual) {
 			return res.status(403).json(
 				new BaseObj({
 					success: false,
@@ -275,20 +290,23 @@ router.get('/discord/', apiLimiter, async (req, res) => {
 router.get('/subreddit/', async (req, res) => {
 	const client = await Client.connect();
 	const key = req.headers.authorization || req.query?.key;
+
 	try {
 		if (key == undefined) {
 			return res.status(401).json(
 				new BaseObj({
 					success: false,
 					status: 401,
-					statusMessage: 'You must provide a key',
+					statusMessage: 'You must include an API key',
 					data: null,
 				})
 			);
 		}
 
+		const hmac = new Utils().ConvertKey(key as string);
+
 		const request = await client.query(
-			`SELECT ips FROM ApiUser WHERE apikey = '${key}'`
+			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
 		);
 
 		if (request.rows.length == 0) {
@@ -296,28 +314,35 @@ router.get('/subreddit/', async (req, res) => {
 				new BaseObj({
 					success: false,
 					status: 403,
-					statusMessage: 'Invalid API key provided',
+					statusMessage: "I couldn't find this key in my database!",
 					data: null,
 				})
 			);
 		}
 
-		if (request.rows[0].ips == null) {
+		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			const iphmac = new Utils().ConvertIP(req.ip);
+
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}'`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
 			);
 			await client.query(`COMMIT`);
 		}
 
-		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
 
-		if (request.rows[0].ips != ip) {
+		const verifier = new Verifier(key as string, ip, false);
+
+		const isEqual = verifier.CheckIP(req.ip);
+
+		if (!isEqual) {
 			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
-					statusMessage: 'Invalid IP address.',
+					statusMessage:
+						'Invalid IP address. API key must be used at original IP address',
 					data: null,
 				})
 			);
@@ -387,8 +412,10 @@ router.get('/reddit/', async (req, res) => {
 			);
 		}
 
+		const hmac = new Utils().ConvertKey(key as string);
+
 		const request = await client.query(
-			`SELECT ips from ApiUser WHERE apikey = '${key}'`
+			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
 		);
 
 		if (request.rows.length == 0) {
@@ -396,24 +423,30 @@ router.get('/reddit/', async (req, res) => {
 				new BaseObj({
 					success: false,
 					status: 403,
-					statusMessage: 'Invalid API key',
+					statusMessage: "I couldn't find this key in my database!",
 					data: null,
 				})
 			);
 		}
 
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
+			const iphmac = new Utils().ConvertIP(req.ip);
+
 			await client.query(`BEGIN`);
 			await client.query(
-				`UPDATE ApiUser SET ips = '${req.ip}' WHERE apikey = '${key}`
+				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${key}`
 			);
 			await client.query(`COMMIT`);
 		}
 
-		const ip = request.rows[0].ips == null ? req.ip : request.rows[0].ips;
+		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
 
-		if (ip != request.rows[0].ips) {
-			return res.status(400).json(
+		const verifier = new Verifier(key as string, ip, false);
+
+		const isEqual = verifier.CheckIP(req.ip);
+
+		if (!isEqual) {
+			return res.status(403).json(
 				new BaseObj({
 					success: false,
 					status: 403,
