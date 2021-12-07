@@ -438,7 +438,7 @@ router.get('/reddit/', async (req, res) => {
 		let ip: string;
 
 		if (request.rows.length > 0 && request.rows[0].ips != null) {
-			ip = new Utils().ConvertIP(request.rows[0].ips);
+			ip = request.rows[0].ips;
 		}
 
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
@@ -452,9 +452,6 @@ router.get('/reddit/', async (req, res) => {
 
 			ip = iphmac;
 		}
-
-		console.log(new Utils().ConvertIP(req.ip))
-		console.log(ip);
 
 		const verifier = new Verifier(key as string, ip, false);
 
