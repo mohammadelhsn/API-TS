@@ -6,6 +6,8 @@ import BaseObj from '../Structures/BaseObj';
 import Funcs from '../Interfaces/Funcs';
 import moment from 'moment';
 import crypto from 'crypto';
+import { Request, Response } from 'express';
+import { PoolClient } from 'pg';
 
 dotenv.config();
 
@@ -21,6 +23,13 @@ namespace Functions {
 		Capitalize(string: string) {
 			return string.charAt(0).toUpperCase() + string.slice(1);
 		}
+		async SetIP(client: PoolClient, hmac: string) {
+			await client.query(`BEGIN`);
+			await client.query(
+				`UPDATE ApiUser SET ips = '${hmac}' WHERE apikey = '${hmac}'`
+			);
+			await client.query(`COMMIT`);
+		}
 		ConvertKey = (key: string) =>
 			crypto
 				.createHmac('sha256', this.secret)
@@ -33,6 +42,16 @@ namespace Functions {
 				.update(ip)
 				.digest()
 				.toString('hex');
+		NoKey = (req: Request, res: Response) => {
+			const data = new BaseObj({
+				success: false,
+				status: 401,
+				statusMessage: 'You must include an API key',
+				data: null,
+			});
+
+			return res.status(401).json(data);
+		};
 	}
 	export class Funcs {
 		async Roblox(user: string) {
@@ -350,6 +369,125 @@ namespace Functions {
 				: this.key == this.HideKey(compare);
 		CheckIP = (compare: string, convert = true) =>
 			convert == false ? compare == this.ip : this.ip == this.HideIP(compare);
+	}
+	abstract class BaseResponder {
+		res: Response;
+		data: BaseObj;
+		constructor(res: Response, data?: BaseObj) {
+			this.res = res;
+			this.data = data;
+		}
+		abstract SetData(data: object): this;
+		abstract SetStatus(status: number, statusMessage: string): this;
+		abstract Respond(): void;
+	}
+	export class Success extends BaseResponder {
+		constructor(res: Response, data?: BaseObj) {
+			if (!data) {
+				data = new BaseObj({
+					status: 200,
+					statusMessage: 'OK',
+					success: true,
+					data: null,
+				});
+			}
+			super(res, data);
+		}
+		SetData(data: object) {
+			this.data.data = data;
+			return this;
+		}
+		SetStatus(status: number, message: string) {
+			this.data.status = status;
+			this.data.statusMessage = message;
+			return this;
+		}
+		Respond() {
+			this.res.status(200).json(this.data);
+			return;
+		}
+	}
+	export class InvalidKey extends BaseResponder {
+		constructor(res: Response, data?: BaseObj) {
+			if (!data) {
+				data = new BaseObj({
+					success: false,
+					status: 403,
+					statusMessage: "I couldn't find this key in my database!",
+					data: null,
+				});
+			}
+			super(res, data);
+		}
+		SetData(data: object) {
+			this.data.data = data;
+			return this;
+		}
+		SetStatus(status: number, message: string) {
+			this.data.status = status;
+			this.data.statusMessage = message;
+			return this;
+		}
+		Respond() {
+			this.res.status(403).json(this.data);
+			return;
+		}
+	}
+
+	export class InvalidIP extends BaseResponder {
+		constructor(res: Response, data?: BaseObj) {
+			if (!data) {
+				data = new BaseObj({
+					success: false,
+					status: 403,
+					statusMessage:
+						'Invalid IP address. API key must be used at original IP address',
+					data: null,
+				});
+			}
+			super(res, data);
+		}
+
+		SetData(data: object) {
+			this.data.data = data;
+			return this;
+		}
+		SetStatus(status: number, message: string) {
+			this.data.status = status;
+			this.data.statusMessage = message;
+			return this;
+		}
+		Respond() {
+			this.res.status(403).json(this.data);
+			return;
+		}
+	}
+
+	export class BadRequest extends BaseResponder {
+		constructor(res: Response, data?: BaseObj) {
+			if (!data) {
+				data = new BaseObj({
+					success: false,
+					status: 400,
+					statusMessage: 'Bad request!',
+					data: null,
+				});
+			}
+			super(res, data);
+		}
+		SetData(data: object) {
+			this.data.data = data;
+			return this;
+		}
+		SetStatus(status: number, message: string) {
+			this.data.status = status;
+			this.data.statusMessage = message;
+			return this;
+		}
+		Respond() {
+			this.res.status(400).json(this.data);
+			return;
+		}
 	}
 }
 

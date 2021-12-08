@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import BaseObj from './Structures/BaseObj';
-import Functions, { Utils, Verifier } from './Functions/Functions';
+import Functions from './Functions/Functions';
 import { Pool } from 'pg';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 
 const Client = new Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -11,25 +12,50 @@ const Client = new Pool({
 
 const router = Router();
 
-const { Funcs } = Functions;
+const { Funcs, Verifier, Utils, Success } = Functions;
 
 router.use((req, res, next) => {
 	next();
 });
 
+router.get('/test', (req, res) => {
+	const options = {
+		root: path.join(__dirname, ''),
+		dotfiles: 'deny',
+		headers: {
+			'x-timestamp': Date.now(),
+			'x-sent': true,
+		},
+	};
+
+	return res.status(200).sendFile('./index.html', options);
+});
+
+router.get('/ip', (req, res) => {
+	return res
+		.status(200)
+		.redirect(
+			'https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley'
+		);
+});
+
 router.get('/', (req, res) => {
-	res.json({
+	const data = {
 		docs: 'https://processversion.herokuapp.com/docs',
 		endpoints: `https://processversion.herokuapp.com/endpoints`,
-	});
+	};
+
+	return new Success(res).SetData(data).Respond();
 });
 
 router.get('/docs', (req, res) => {
-	res.redirect(`https://github.com/ProcessVersion/processversion-api#readme`);
+	return res
+		.status(200)
+		.redirect(`https://github.com/ProcessVersion/processversion-api#readme`);
 });
 
 router.get('/endpoints', (req, res) => {
-	res.json([
+	return res.status(200).json([
 		{
 			path: '/reddit',
 			methods: ['GET'],
@@ -59,14 +85,7 @@ router.get(`/roblox/`, async (req, res) => {
 
 	try {
 		if (key == undefined) {
-			return res.status(401).json(
-				new BaseObj({
-					success: false,
-					status: 401,
-					statusMessage: 'You must include an API key',
-					data: null,
-				})
-			);
+			return new Functions.InvalidKey(res).Respond();
 		}
 
 		const hmac = new Utils().ConvertKey(key as string);
@@ -76,24 +95,13 @@ router.get(`/roblox/`, async (req, res) => {
 		);
 
 		if (request.rows.length == 0) {
-			return res.status(403).json(
-				new BaseObj({
-					success: false,
-					status: 403,
-					statusMessage: "I couldn't find this key in my database!",
-					data: null,
-				})
-			);
+			return new Functions.InvalidKey(res).Respond();
 		}
 
 		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
 			const iphmac = new Utils().ConvertIP(req.ip);
-
-			await client.query(`BEGIN`);
-			await client.query(
-				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${hmac}'`
-			);
-			await client.query(`COMMIT`);
+			
+			new Utils().SetIP(client, iphmac)
 		}
 
 		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
@@ -103,26 +111,13 @@ router.get(`/roblox/`, async (req, res) => {
 		const isEqual = verifier.CheckIP(req.ip);
 
 		if (!isEqual) {
-			return res.status(403).json(
-				new BaseObj({
-					success: false,
-					status: 403,
-					statusMessage:
-						'Invalid IP address. API key must be used at original IP address',
-					data: null,
-				})
-			);
+			return new Functions.InvalidIP(res).Respond();
 		}
 
 		if (!req.query.username) {
-			return res.status(400).json(
-				new BaseObj({
-					success: false,
-					status: 400,
-					statusMessage: 'Missing username query',
-					data: null,
-				})
-			);
+			return new Functions.BadRequest(res)
+				.SetStatus(400, 'Missing text query')
+				.Respond();
 		}
 
 		const username = req.query.username as string;
@@ -130,132 +125,6 @@ router.get(`/roblox/`, async (req, res) => {
 		const { Roblox } = new Funcs();
 
 		return res.json(await Roblox(username));
-	} catch (error) {
-		console.log(error);
-
-		return res.status(500).json(
-			new BaseObj({
-				success: false,
-				status: 500,
-				statusMessage: 'An unexpected error has occurred',
-				data: null,
-			})
-		);
-	} finally {
-		const hmac = new Utils().ConvertKey(key as string);
-
-		const result = await client.query(
-			`SELECT timesused FROM ApiUser WHERE apikey = '${hmac}'`
-		);
-
-		if (result.rows.length == 0) {
-			return client.release();
-		}
-
-		let times = parseInt(result.rows[0].timesused);
-		times++;
-
-		await client.query(`BEGIN`);
-		await client.query(
-			`UPDATE ApiUser SET timesused = '${times}' WHERE apikey = '${hmac}'`
-		);
-		await client.query(`COMMIT`);
-
-		client.release();
-	}
-});
-
-const apiLimiter = rateLimit({
-	max: 75,
-	handler: function (req, res) {
-		return res.status(429).json(
-			new BaseObj({
-				success: false,
-				status: 429,
-				statusMessage: 'Too many requests, slow down!',
-				data: null,
-			})
-		);
-	},
-});
-
-router.get('/discord/', apiLimiter, async (req, res) => {
-	const client = await Client.connect();
-	const key = req.headers.authorization || req.query?.key;
-
-	try {
-		if (key == undefined) {
-			return res.status(401).json(
-				new BaseObj({
-					success: false,
-					status: 401,
-					statusMessage: 'You must include an API key',
-					data: null,
-				})
-			);
-		}
-
-		const hmac = new Utils().ConvertKey(key as string);
-
-		const request = await client.query(
-			`SELECT ips FROM ApiUser WHERE apikey = '${hmac}'`
-		);
-
-		if (request.rows.length == 0) {
-			return res.status(403).json(
-				new BaseObj({
-					success: false,
-					status: 403,
-					statusMessage: "I couldn't find this key in my database!",
-					data: null,
-				})
-			);
-		}
-
-		if (request.rows[0].ips == null || request.rows[0].ips == 'null') {
-			const iphmac = new Utils().ConvertIP(req.ip);
-
-			await client.query(`BEGIN`);
-			await client.query(
-				`UPDATE ApiUser SET ips = '${iphmac}' WHERE apikey = '${hmac}'`
-			);
-			await client.query(`COMMIT`);
-		}
-
-		const ip = request.rows.length > 0 ? request.rows[0].ips : req.ip;
-
-		const verifier = new Verifier(key as string, ip, false);
-
-		const isEqual = verifier.CheckIP(req.ip);
-
-		if (!isEqual) {
-			return res.status(403).json(
-				new BaseObj({
-					success: false,
-					status: 403,
-					statusMessage:
-						'Invalid IP address. API key must be used at original IP address',
-					data: null,
-				})
-			);
-		}
-
-		if (!req.query.id) {
-			return res.status(400).json(
-				new BaseObj({
-					success: false,
-					status: 400,
-					statusMessage: 'Missing id query',
-					data: null,
-				})
-			);
-		}
-
-		const id = req.query.id as string;
-
-		const { Discord } = new Funcs();
-
-		return res.json(await Discord(id));
 	} catch (error) {
 		console.log(error);
 
